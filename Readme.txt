@@ -1,4 +1,4 @@
-M1TE ver 1.2 (SNES Mode 1 Tile Editor) Jan 16, 2020
+M1TE ver 1.3 (SNES Mode 1 Tile Editor) Feb 6, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -25,39 +25,62 @@ version changes
     - load any (reasonable) size tileset
     - added brush size for map editor
     - fixed file type bug
+1.3 - added map shift buttons
+    - allow loading unusual size tile, map, palette files
+    - allow loading from very large tile, map, palette files
+    - bug fix loading full palette in 2bpp mode
+    - added Load Map to Selected Y coordinate
+      (for loading multiple small maps to the same screen)
+    - added keys to copy/paste/delete colors in a palette
+      Q = copy, W = paste, E = delete color 0000
+    - fixed hex box to allow 1,2,or 3 digit entries.
+
+
 
 
 Tilemaps
 -------- 
-3 layers. 2 of them 4bpp (16 color). 1 of them 2bpp (4 color)
-Change the BG View to select a layer. 
+3 layers. 2 of them 4bpp (16 color). 1 of them 2bpp (4 color).
+Only 32x32 mode. It can't do 64x32, 32x64, or 64x64. You will have 
+to make multiple files for each 32x32 region needed.
+You can also change the map height at the bottom left (1-32).
+
+Change the BG View to select a layer.
 **Editing is disabled in preview modes.** (except palettes and map height)
+
 Left click to add tiles to the tile map.
 Right click to select a given tile, and get info on it.
-You can edit the selected tile on the map with the "tile attributes" choices.
+You can edit the attributes of the selected tile by clicking H Flip,
+V Flip, Priority, or Palette (0-7).
 Checking "Apply H Flip" or "Apply V Flip" will cause future placed tiles to 
 be flipped.
+Checking "Apply Only Palette" means left click (or drag) on the map will
+only change the palette of tiles on the map.
 
 The priority button changes all the priority bits on the selected map. You 
 won't be able to see this except the 3/1/2 preview shows what would happen 
 if you have all the priority bits set on BG3 and the priority bit set on 
 register $2105.
-Be sure to click the checkbox on BG3 before saving, if you want BG3 to be on 
-top.
+Be sure to click the priority checkbox on BG3 before saving, if you want 
+BG3 to be on top.
+
 
 
 Tilesets
 --------
 4 sets for 4bpp, (sets 1,2,3,4). 4 sets for 2bpp, (sets 5,6,7,8).
 4bpp are for layers 1 and 2. 2bpp is for layer 3.
+
 Left/Right click to open an editing box.
 Numberpad 2,4,6,8 to move to adjacent tile.
 C - copy, P - paste.
+
 (these only work if focus is not on one of the text boxes on the form)
 *note - 2bpp SNES tilesets are NOT like NES. They are like Gameboy, GB,
 so, if you use YY-CHR, set the tile mode to 2bpp GB. You can easily
 convert NES to SNES in YY-CHR by loading NES, copy all the visible tiles,
 switch to 2bpp GB, then paste the tiles again.
+
 
 
 Tile Edit Box
@@ -76,17 +99,25 @@ C - copy, P - paste.
 (! these only work if this box is clicked/active !)
 
 
+
 Palette
 -------
 In 2bpp mode, BG View BG3, each palette has only 4 colors (3 + transparent)
 It is recommended that the first row be reserved for 2bpp tiles.
 In 4bpp we have 16 colors (15 + transparent) per palette.
+
 Left/Right click - select a color
 R - edit red
 G - edit green
 B - edit blue
 Hex - manually type the SNES color code (2 bytes)
 (the color doesn't update until you hit Return in one of these boxes)
+
+Key presses...(click a palette color first)
+Q = copy selected color
+W = paste to the selected color
+E = delete the selected color (sets 0000 black)
+
 * use caution naming palettes the same as your tileset, if you use YY-CHR
 like I do. YY-CHR will auto-create a palette, if you load a .chr and it
 also finds a .pal of the same name. However, it assumes RGB and not the
@@ -95,15 +126,20 @@ The load/save palette as RGB options are specifically for YY-CHR. THAT
 palette can be the same name as the tileset.
 
 
+
 Brushsize
 ---------
 Brushes are for the map. 1x1 means place the current tile.
-3x3 and 5x5 will place a block of the same tile. It is for painting
+3x3 and 5x5 will place multiples of the same tile. It is for painting
 larger areas of the screen with the same tile.
 2x2 next is a pseudo 16x16 placement. It places x, x+1, x+$10, x+$11
 of the selected tile in a 2x2 block on the screen. This might be
 useful if the tileset has tiles arranged in 16x16 blocks.
 
+
+
+Menu
+----
 All the menu options should be self-explanatory. Some of them won't work if
 you are in the wrong mode. The message box should explain the problem.
 
@@ -118,6 +154,7 @@ depth needs to match, so consider marking each tileset with a 2 or 4 to
 keep them separated.
 
 File/Export Image saves the current view on the Tilemap as .png .bmp or .jpg
+
 
 
 Native .M1 file format details...
@@ -139,13 +176,11 @@ Native .M1 file format details...
 
 
 
-//////////////////////////////////////////////
-
-TODO - (future features)
-Z - undo (?)
-16x16 tiles
-
 ///////////////////////////////////////////////
+TODO-
+select multiple tiles to place as a block.
+///////////////////////////////////////////////
+
 
 
 Credits -

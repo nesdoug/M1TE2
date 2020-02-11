@@ -44,6 +44,7 @@ namespace M1TE2
         public const int BRUSH3x3 = 1;
         public const int BRUSH5x5 = 2;
         public const int BRUSHNEXT = 3;
+        public static int pal_r_copy, pal_g_copy, pal_b_copy;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -367,8 +368,8 @@ namespace M1TE2
 
         private bool is_hex(char ch1)
         {
-            if ((ch1 >= '0') || (ch1 <= '9')) return true;
-            if ((ch1 >= 'A') || (ch1 <= 'F')) return true;
+            if ((ch1 >= '0') && (ch1 <= '9')) return true;
+            if ((ch1 >= 'A') && (ch1 <= 'F')) return true;
             //should be upper case letters
             return false;
         }
@@ -377,10 +378,14 @@ namespace M1TE2
 
         private string check_hex(string str) //str.Length should be exacly 4
         {
-            if (!is_hex(str[0])) return "0000"; // error, reset all
-            if (!is_hex(str[1])) return "0000";
-            if (!is_hex(str[2])) return "0000";
-            if (!is_hex(str[3])) return "0000";
+            if ((!is_hex(str[0])) ||
+                (!is_hex(str[1])) ||
+                (!is_hex(str[2])) ||
+                (!is_hex(str[3])) )
+            {
+                //something isn't a hex string
+                return "Z";
+            }
 
             //make sure the high byte is 0-7
             if (str[0] > '7')
@@ -565,12 +570,19 @@ namespace M1TE2
             if (e.KeyChar == (char)Keys.Return)
             {
                 string str = textBox4.Text;
+                str = str.Trim(); // remove spaces
                 int[] value = new int[4];
                 int temp;
 
-                if (textBox4.Text.Length != 4) return;
+                if(str.Length < 4)
+                {
+                    str = str.PadLeft(4, '0');
+                }
+
+                if (str.Length != 4) return;
                 str = str.ToUpper();
-                str = check_hex(str);
+                str = check_hex(str); //returns "Z" if fail
+                if (str == "Z") return;
 
                 textBox4.Text = str;
 
@@ -1063,40 +1075,75 @@ namespace M1TE2
         //capure key presses on the tiles, focus is redirected to label 5
         private void label5_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
+            int selection = pal_x + (pal_y * 16);
+
             if (e.KeyCode == Keys.C)
             {
                 Tiles.tile_copy();
-                common_update2();
+                //common_update2();
             }
             else if (e.KeyCode == Keys.P)
             {
                 Tiles.tile_paste();
-                common_update2();
+                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad4) 
             {
                 if (tile_x > 0) tile_x--;
                 tile_num = (tile_y * 16) + tile_x;
-                common_update2();
+                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad8)
             {
                 if (tile_y > 0) tile_y--;
                 tile_num = (tile_y * 16) + tile_x;
-                common_update2();
+                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad6)
             {
                 if (tile_x < 15) tile_x++;
                 tile_num = (tile_y * 16) + tile_x;
-                common_update2();
+                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad2)
             {
                 if (tile_y < 15) tile_y++;
                 tile_num = (tile_y * 16) + tile_x;
-                common_update2();
+                //common_update2();
             }
+            else if (e.KeyCode == Keys.Q)
+            { // copy selected color
+                //int selection = pal_x + (pal_y * 16);
+                pal_r_copy = Palettes.pal_r[selection];
+                pal_g_copy = Palettes.pal_g[selection];
+                pal_b_copy = Palettes.pal_b[selection];
+            }
+            else if (e.KeyCode == Keys.W)
+            { // paste selected to color
+                //int selection = pal_x + (pal_y * 16);
+                Palettes.pal_r[selection] = (byte)pal_r_copy;
+                Palettes.pal_g[selection] = (byte)pal_g_copy;
+                Palettes.pal_b[selection] = (byte)pal_b_copy;
+                update_palette();
+                textBox1.Text = Palettes.pal_r[selection].ToString();
+                textBox2.Text = Palettes.pal_g[selection].ToString();
+                textBox3.Text = Palettes.pal_b[selection].ToString();
+                update_box4();
+            }
+            else if (e.KeyCode == Keys.E)
+            { // clear selected to color
+                //int selection = pal_x + (pal_y * 16);
+                Palettes.pal_r[selection] = 0;
+                Palettes.pal_g[selection] = 0;
+                Palettes.pal_b[selection] = 0;
+                update_palette();
+                textBox1.Text = Palettes.pal_r[selection].ToString();
+                textBox2.Text = Palettes.pal_g[selection].ToString();
+                textBox3.Text = Palettes.pal_b[selection].ToString();
+                update_box4();
+            }
+
+            common_update2();
         }
 
         
@@ -1151,6 +1198,154 @@ namespace M1TE2
             x5ToolStripMenuItem.Checked = false;
             x2NextToolStripMenuItem.Checked = true;
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        { // shift map left
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset2;
+            if (map_view > 2) return;
+            temp_offset = 32 * 32 * map_view;
+
+            for(int yy = 0; yy < 32; yy++)
+            {
+                temp_offset2 = temp_offset + (yy * 32);
+                // save left most column
+                temp_tile = Maps.tile[temp_offset2];
+                temp_palette = Maps.palette[temp_offset2];
+                temp_h_flip = Maps.h_flip[temp_offset2];
+                temp_v_flip = Maps.v_flip[temp_offset2];
+                temp_priority = Maps.priority[temp_offset2];
+
+                for (int xx = 0; xx < 31; xx++)
+                {
+                    // shift every tile left 1
+                    Maps.tile[temp_offset2 + xx] = Maps.tile[temp_offset2 + xx + 1];
+                    Maps.palette[temp_offset2 + xx] = Maps.palette[temp_offset2 + xx + 1];
+                    Maps.h_flip[temp_offset2 + xx] = Maps.h_flip[temp_offset2 + xx + 1];
+                    Maps.v_flip[temp_offset2 + xx] = Maps.v_flip[temp_offset2 + xx + 1];
+                    Maps.priority[temp_offset2 + xx] = Maps.priority[temp_offset2 + xx + 1];
+                }
+                // put left most column on right
+                Maps.tile[temp_offset2+31] = temp_tile;
+                Maps.palette[temp_offset2+31] = temp_palette;
+                Maps.h_flip[temp_offset2+31] = temp_h_flip;
+                Maps.v_flip[temp_offset2+31] = temp_v_flip;
+                Maps.priority[temp_offset2+31] = temp_priority;
+            }
+            common_update2();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        { // shift map right
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset2;
+            if (map_view > 2) return;
+            temp_offset = 32 * 32 * map_view;
+
+            for (int yy = 0; yy < 32; yy++)
+            {
+                temp_offset2 = temp_offset + (yy * 32);
+                // save right most column
+                temp_tile = Maps.tile[temp_offset2 + 31];
+                temp_palette = Maps.palette[temp_offset2 + 31];
+                temp_h_flip = Maps.h_flip[temp_offset2 + 31];
+                temp_v_flip = Maps.v_flip[temp_offset2 + 31];
+                temp_priority = Maps.priority[temp_offset2 + 31];
+
+                for (int xx = 30; xx >= 0; xx--)
+                {
+                    // shift every tile right 1
+                    Maps.tile[temp_offset2 + xx + 1] = Maps.tile[temp_offset2 + xx];
+                    Maps.palette[temp_offset2 + xx + 1] = Maps.palette[temp_offset2 + xx];
+                    Maps.h_flip[temp_offset2 + xx + 1] = Maps.h_flip[temp_offset2 + xx];
+                    Maps.v_flip[temp_offset2 + xx + 1] = Maps.v_flip[temp_offset2 + xx];
+                    Maps.priority[temp_offset2 + xx + 1] = Maps.priority[temp_offset2 + xx];
+                }
+                // put right most column on left
+                Maps.tile[temp_offset2] = temp_tile;
+                Maps.palette[temp_offset2] = temp_palette;
+                Maps.h_flip[temp_offset2] = temp_h_flip;
+                Maps.v_flip[temp_offset2] = temp_v_flip;
+                Maps.priority[temp_offset2] = temp_priority;
+            }
+            common_update2();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        { // shift map up
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset2, temp_offset3;
+            if (map_view > 2) return;
+            temp_offset = 32 * 32 * map_view;
+
+            for (int xx = 0; xx < 32; xx++)
+            {
+                temp_offset2 = temp_offset + xx;
+                // save top most row
+                temp_tile = Maps.tile[temp_offset2];
+                temp_palette = Maps.palette[temp_offset2];
+                temp_h_flip = Maps.h_flip[temp_offset2];
+                temp_v_flip = Maps.v_flip[temp_offset2];
+                temp_priority = Maps.priority[temp_offset2];
+
+                for (int yy = 0; yy < 31; yy++)
+                {
+                    // shift every tile up 1
+                    temp_offset3 = temp_offset2 + (yy * 32);
+                    Maps.tile[temp_offset3] = Maps.tile[temp_offset3 + 32];
+                    Maps.palette[temp_offset3] = Maps.palette[temp_offset3 + 32];
+                    Maps.h_flip[temp_offset3] = Maps.h_flip[temp_offset3 + 32];
+                    Maps.v_flip[temp_offset3] = Maps.v_flip[temp_offset3 + 32];
+                    Maps.priority[temp_offset3] = Maps.priority[temp_offset3 + 32];
+                }
+                // put top most row on bottom
+                Maps.tile[temp_offset2 + (31 * 32)] = temp_tile;
+                Maps.palette[temp_offset2 + (31 * 32)] = temp_palette;
+                Maps.h_flip[temp_offset2 + (31 * 32)] = temp_h_flip;
+                Maps.v_flip[temp_offset2 + (31 * 32)] = temp_v_flip;
+                Maps.priority[temp_offset2 + (31 * 32)] = temp_priority;
+            }
+            common_update2();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        { // shift map down
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset2, temp_offset3;
+            if (map_view > 2) return;
+            temp_offset = 32 * 32 * map_view;
+
+            for (int xx = 0; xx < 32; xx++)
+            {
+                temp_offset2 = temp_offset + xx;
+                // save bottom most row
+                temp_tile = Maps.tile[temp_offset2 + (31 * 32)];
+                temp_palette = Maps.palette[temp_offset2 + (31 * 32)];
+                temp_h_flip = Maps.h_flip[temp_offset2 + (31 * 32)];
+                temp_v_flip = Maps.v_flip[temp_offset2 + (31 * 32)];
+                temp_priority = Maps.priority[temp_offset2 + (31 * 32)];
+
+                for (int yy = 30; yy >= 0; yy--)
+                {
+                    // shift every tile down 1
+                    temp_offset3 = temp_offset2 + (yy * 32);
+                    Maps.tile[temp_offset3 + 32] = Maps.tile[temp_offset3];
+                    Maps.palette[temp_offset3 + 32] = Maps.palette[temp_offset3];
+                    Maps.h_flip[temp_offset3 + 32] = Maps.h_flip[temp_offset3];
+                    Maps.v_flip[temp_offset3 + 32] = Maps.v_flip[temp_offset3];
+                    Maps.priority[temp_offset3 + 32] = Maps.priority[temp_offset3];
+                }
+                // put bottom most row on top
+                Maps.tile[temp_offset2] = temp_tile;
+                Maps.palette[temp_offset2] = temp_palette;
+                Maps.h_flip[temp_offset2] = temp_h_flip;
+                Maps.v_flip[temp_offset2] = temp_v_flip;
+                Maps.priority[temp_offset2] = temp_priority;
+            }
+            common_update2();
+        }
+
+        
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -1321,6 +1516,21 @@ namespace M1TE2
                         count++;
                     }
                 }
+
+                //draw the other colors anyway, need if load palette from menu
+                for (int i = 64; i < 256; i += 32) //each row
+                {
+                    for (int j = 0; j < 256; j += 16) //each box in the row
+                    {
+                        // draw a rectangle
+                        using (Graphics g = Graphics.FromImage(temp_bmp3))
+                        {
+                            temp_brush.Color = Color.FromArgb(Palettes.pal_r[count], Palettes.pal_g[count], Palettes.pal_b[count]);
+                            g.FillRectangle(temp_brush, j, i, 16, 16);
+                        }
+                        count++;
+                    }
+                }
             }
             else // 4bpp
             {
@@ -1437,6 +1647,7 @@ namespace M1TE2
             }
 
             common_update2();
+            label5.Focus();
         }
 
 

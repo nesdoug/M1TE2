@@ -343,8 +343,6 @@ namespace M1TE2
 
         private void loadMapToolStripMenuItem_Click(object sender, EventArgs e)
         { // MAPS / LOAD A MAP
-            
-            // load a map 2 * 32 * height (1-32)
             if (map_view > 2)
             {
                 MessageBox.Show("Select View: BG1, BG2, or BG3.");
@@ -352,7 +350,7 @@ namespace M1TE2
             }
 
             byte[] map_array = new byte[2 * 32 * 32]; // 128 entries * 2 bytes, little endian
-            int height, map_size, map_mod;
+            int map_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a Tile Map";
@@ -362,24 +360,18 @@ namespace M1TE2
             {
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
 
-                if ((fs.Length > 2048) || (fs.Length < 64))
+                if (fs.Length < 2)
                 {
-                    MessageBox.Show("File size error. Expected 64 - 2048 bytes.",
+                    MessageBox.Show("File size error. Expected 2 - 2048 bytes.",
                     "File size error", MessageBoxButtons.OK);
                 }
                 else
                 {
                     map_size = (int)fs.Length; // how many bytes we need to copy
-                    height = map_size / 64;
-                    map_mod = map_size % 64; // should be exactly divisible by 64
-                    if (map_mod != 0)
-                    {
-                        MessageBox.Show("File size error. Expected multiple of 64.",
-                        "File size error", MessageBoxButtons.OK);
-                    }
-                    else
-                    {
+                    if (fs.Length > 0x800) map_size = 0x800;
+                    map_size = map_size & 0xfffe; // should be even
 
+                    {
                         for (int i = 0; i < map_size; i++)
                         {
                             map_array[i] = (byte)fs.ReadByte();
@@ -405,6 +397,7 @@ namespace M1TE2
                             offset++;
                         }
 
+                        // assume that all the priority bits are the same.
                         offset = map_view * 32 * 32;
                         if (Maps.priority[offset] == 0) checkBox3.Checked = false;
                         else checkBox3.Checked = true;
@@ -416,6 +409,78 @@ namespace M1TE2
                 update_tilemap();
             }
         } // END OF LOAD A MAP
+
+
+        private void loadAMapToSelectedXYToolStripMenuItem_Click(object sender, EventArgs e)
+        { // load map to specific map Y coordinates.
+            if (map_view > 2)
+            {
+                MessageBox.Show("Select View: BG1, BG2, or BG3.");
+                return;
+            }
+
+            byte[] map_array = new byte[2 * 32 * 32]; // 128 entries * 2 bytes, little endian
+            int map_size;
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Title = "Select a Tile Map";
+            openFileDialog1.Filter = "Tile Map (*.map)|*.map|All files (*.*)|*.*";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
+
+                if (fs.Length < 2)
+                {
+                    MessageBox.Show("File size error. Expected 2 - 2048 bytes.",
+                    "File size error", MessageBoxButtons.OK);
+                }
+                else
+                {
+                    map_size = (int)fs.Length; // how many bytes we need to copy
+                    if (fs.Length > 0x800) map_size = 0x800;
+                    map_size = map_size & 0xfffe; // should be even
+
+                    {
+                        for (int i = 0; i < map_size; i++)
+                        {
+                            map_array[i] = (byte)fs.ReadByte();
+                        }
+
+                        int offset = (map_view * 32 * 32) + (32 * active_map_y);
+                        int too_far = ((map_view + 1) * 32 * 32);
+
+                        //copy it here
+                        //int half_size = map_size / 2;
+                        for (int i = 0; i < map_size; i += 2)
+                        {
+                            byte weird_byte = map_array[i + 1];
+                            int tile = map_array[i] + ((weird_byte & 3) << 8);
+                            Maps.tile[offset] = tile;
+                            int pal = (weird_byte >> 2) & 7;
+                            Maps.palette[offset] = pal;
+                            int pri = (weird_byte >> 5) & 1;
+                            Maps.priority[offset] = pri;
+                            int h_flip = (weird_byte >> 6) & 1;
+                            Maps.h_flip[offset] = h_flip;
+                            int v_flip = (weird_byte >> 7) & 1;
+                            Maps.v_flip[offset] = v_flip;
+                            offset++;
+                            if (offset >= too_far) break;
+                        }
+
+                        // assume that all the priority bits are the same.
+                        offset = (map_view * 32 * 32) + (32 * active_map_y);
+                        if (Maps.priority[offset] == 0) checkBox3.Checked = false;
+                        else checkBox3.Checked = true;
+                    }
+                }
+
+                fs.Close();
+
+                update_tilemap();
+            }
+        }
 
 
 
@@ -574,7 +639,7 @@ namespace M1TE2
                     {
                         size_temp_tiles = 0x1000;
                     }
-                    if (size_temp_tiles > 0x4000)
+                    if (fs.Length > 0x4000)
                     {
                         size_temp_tiles = 0x4000; // max, 4 tilesets worth.
                     }
@@ -612,7 +677,7 @@ namespace M1TE2
 
                     // make sure don't try to copy more bytes than exist.
                     int min_size = size_temp_tiles;
-                    if(min_size > (int)fs.Length)
+                    if(min_size > fs.Length)
                     {
                         min_size = (int)fs.Length;
                     }
@@ -708,7 +773,7 @@ namespace M1TE2
                     {
                         size_temp_tiles = 0x2000;
                     }
-                    if (size_temp_tiles > 0x8000)
+                    if (fs.Length > 0x8000)
                     {
                         size_temp_tiles = 0x8000; // max, 4 tilesets worth.
                     }
@@ -746,7 +811,7 @@ namespace M1TE2
 
                     // make sure don't try to copy more bytes than exist.
                     int min_size = size_temp_tiles;
-                    if (min_size > (int)fs.Length)
+                    if (min_size > fs.Length)
                     {
                         min_size = (int)fs.Length;
                     }
@@ -1015,7 +1080,7 @@ namespace M1TE2
         private void loadPaletteToolStripMenuItem_Click(object sender, EventArgs e)
         { // PALETTE / LOAD FULL PALETTE
             byte[] pal_array = new byte[256]; // 128 entries * 2 bytes, little endian
-            int temp;
+            int temp, max_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a Palette file";
@@ -1024,15 +1089,22 @@ namespace M1TE2
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
-                if (fs.Length == 256)
+                max_size = (int)fs.Length & 0x1fe; // should be even
+                if(fs.Length > 0x100)
+                {
+                    max_size = 0x100; // handle unusually large
+                }
+                if (max_size >= 2)
                 {
                     for (int i = 0; i < 256; i++)
                     {
+                        if (i >= max_size) break;
                         pal_array[i] = (byte)fs.ReadByte();
                     }
 
                     for (int i = 0; i < 256; i += 2)
                     {
+                        if(i >= max_size) break;
                         int j;
                         temp = pal_array[i] + (pal_array[i + 1] << 8);
                         if ((i == 0x20) || (i == 0x40) || (i == 0x60) || (i == 0x80) ||
@@ -1070,7 +1142,7 @@ namespace M1TE2
         { // PALETTE / LOAD 32 bytes
             // load just 1 palette (16 colors = 32 bytes)
             byte[] pal_array = new byte[32]; // 16 entries * 2 bytes, little endian
-            int temp;
+            int temp, max_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a Palette file";
@@ -1079,15 +1151,22 @@ namespace M1TE2
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
-                if (fs.Length == 32)
+                max_size = (int)fs.Length & 0x00fe; // should be even
+                if (fs.Length > 0xfe)
+                {
+                    max_size = 0xfe; // handle unusually large
+                }
+                if (max_size >= 2)
                 {
                     for (int i = 0; i < 32; i++)
                     {
+                        if (i >= max_size) break;
                         pal_array[i] = (byte)fs.ReadByte();
                     }
 
                     for (int i = 0; i < 32; i += 2)
                     {
+                        if (i >= max_size) break;
                         int j;
                         temp = pal_array[i] + (pal_array[i + 1] << 8);
                         if ((i == 0) && (pal_y != 0)) continue;
@@ -1124,7 +1203,7 @@ namespace M1TE2
         private void loadPaletteFromRGBToolStripMenuItem_Click(object sender, EventArgs e)
         { // PALETTE / LOAD FROM RGB
             byte[] pal_array = new byte[384]; // 128 entries * 3 colors
-            int temp;
+            int temp, max_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a Palette file";
@@ -1133,21 +1212,23 @@ namespace M1TE2
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
-                if ((fs.Length >= 3) && (fs.Length <= 768))
+                max_size = (int)fs.Length;
+                max_size = (max_size / 3) * 3; // should be multiple of 3
+                if (fs.Length > 384) max_size = 384; // handle unusually large
+
+                if (max_size >= 3)
                 {
                     for (int i = 0; i < 384; i++)
                     {
-                        if (i == fs.Length) break;
+                        if (i >= max_size) break;
                         pal_array[i] = (byte)fs.ReadByte();
                     }
 
-                    int max = (int)fs.Length;
-                    max = (max / 3) * 3; // should now be divisible by 3
                     int offset = 0;
 
                     for (int i = 0; i < 384; i += 3) //128 * 3 color
                     {
-                        if (i >= max) break;
+                        if (i >= max_size) break;
                         Palettes.pal_r[offset] = (byte)(pal_array[i] & 0xf8);
                         Palettes.pal_g[offset] = (byte)(pal_array[i + 1] & 0xf8);
                         Palettes.pal_b[offset] = (byte)(pal_array[i + 2] & 0xf8);
@@ -1790,7 +1871,7 @@ namespace M1TE2
         
         private void aboutM1TEToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2019.\n\nVersion 1.2");
+            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.3");
         }
         
 

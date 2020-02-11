@@ -65,6 +65,7 @@
             this.endSessionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mapsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadAMapToSelectedXYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAMap224ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
@@ -111,6 +112,10 @@
             this.x2NextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.button1 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -452,6 +457,7 @@
             // 
             this.mapsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadMapToolStripMenuItem,
+            this.loadAMapToSelectedXYToolStripMenuItem,
             this.saveMapToolStripMenuItem,
             this.saveAMap224ToolStripMenuItem,
             this.toolStripMenuItem3,
@@ -463,34 +469,41 @@
             // loadMapToolStripMenuItem
             // 
             this.loadMapToolStripMenuItem.Name = "loadMapToolStripMenuItem";
-            this.loadMapToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.loadMapToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
             this.loadMapToolStripMenuItem.Text = "Load a Map";
             this.loadMapToolStripMenuItem.Click += new System.EventHandler(this.loadMapToolStripMenuItem_Click);
+            // 
+            // loadAMapToSelectedXYToolStripMenuItem
+            // 
+            this.loadAMapToSelectedXYToolStripMenuItem.Name = "loadAMapToSelectedXYToolStripMenuItem";
+            this.loadAMapToSelectedXYToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
+            this.loadAMapToSelectedXYToolStripMenuItem.Text = "Load a Map to Selected Y";
+            this.loadAMapToSelectedXYToolStripMenuItem.Click += new System.EventHandler(this.loadAMapToSelectedXYToolStripMenuItem_Click);
             // 
             // saveMapToolStripMenuItem
             // 
             this.saveMapToolStripMenuItem.Name = "saveMapToolStripMenuItem";
-            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.saveMapToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
             this.saveMapToolStripMenuItem.Text = "Save a 32x32 Map";
             this.saveMapToolStripMenuItem.Click += new System.EventHandler(this.saveMapToolStripMenuItem_Click);
             // 
             // saveAMap224ToolStripMenuItem
             // 
             this.saveAMap224ToolStripMenuItem.Name = "saveAMap224ToolStripMenuItem";
-            this.saveAMap224ToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.saveAMap224ToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
             this.saveAMap224ToolStripMenuItem.Text = "Save a 32xHeight Map";
             this.saveAMap224ToolStripMenuItem.Click += new System.EventHandler(this.saveAMap224ToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(190, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(207, 22);
             this.toolStripMenuItem3.Text = " ";
             // 
             // clearAllMapsToolStripMenuItem
             // 
             this.clearAllMapsToolStripMenuItem.Name = "clearAllMapsToolStripMenuItem";
-            this.clearAllMapsToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.clearAllMapsToolStripMenuItem.Size = new System.Drawing.Size(207, 22);
             this.clearAllMapsToolStripMenuItem.Text = "Clear All Maps";
             this.clearAllMapsToolStripMenuItem.Click += new System.EventHandler(this.clearAllMapsToolStripMenuItem_Click);
             // 
@@ -512,55 +525,55 @@
             // load2bppSNESToolStripMenuItem
             // 
             this.load2bppSNESToolStripMenuItem.Name = "load2bppSNESToolStripMenuItem";
-            this.load2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.load2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.load2bppSNESToolStripMenuItem.Text = "Load 2bpp";
             this.load2bppSNESToolStripMenuItem.Click += new System.EventHandler(this.load2bppSNESToolStripMenuItem_Click);
             // 
             // load4bppSNESToolStripMenuItem
             // 
             this.load4bppSNESToolStripMenuItem.Name = "load4bppSNESToolStripMenuItem";
-            this.load4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.load4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.load4bppSNESToolStripMenuItem.Text = "Load 4bpp";
             this.load4bppSNESToolStripMenuItem.Click += new System.EventHandler(this.load4bppSNESToolStripMenuItem_Click);
             // 
             // save2bppSNESToolStripMenuItem
             // 
             this.save2bppSNESToolStripMenuItem.Name = "save2bppSNESToolStripMenuItem";
-            this.save2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.save2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.save2bppSNESToolStripMenuItem.Text = "Save 2bpp x 1";
             this.save2bppSNESToolStripMenuItem.Click += new System.EventHandler(this.save2bppSNESToolStripMenuItem_Click);
             // 
             // save2bppX4ToolStripMenuItem
             // 
             this.save2bppX4ToolStripMenuItem.Name = "save2bppX4ToolStripMenuItem";
-            this.save2bppX4ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.save2bppX4ToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.save2bppX4ToolStripMenuItem.Text = "Save 2bpp x 4";
             this.save2bppX4ToolStripMenuItem.Click += new System.EventHandler(this.save2bppX4ToolStripMenuItem_Click);
             // 
             // save4bppSNESToolStripMenuItem
             // 
             this.save4bppSNESToolStripMenuItem.Name = "save4bppSNESToolStripMenuItem";
-            this.save4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.save4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.save4bppSNESToolStripMenuItem.Text = "Save 4bpp x 1";
             this.save4bppSNESToolStripMenuItem.Click += new System.EventHandler(this.save4bppSNESToolStripMenuItem_Click);
             // 
             // save4bppX4ToolStripMenuItem
             // 
             this.save4bppX4ToolStripMenuItem.Name = "save4bppX4ToolStripMenuItem";
-            this.save4bppX4ToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.save4bppX4ToolStripMenuItem.Size = new System.Drawing.Size(145, 22);
             this.save4bppX4ToolStripMenuItem.Text = "Save 4bpp x 4";
             this.save4bppX4ToolStripMenuItem.Click += new System.EventHandler(this.save4bppX4ToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(152, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(145, 22);
             this.toolStripMenuItem4.Text = " ";
             // 
             // clearAllTilesToolStripMenuItem1
             // 
             this.clearAllTilesToolStripMenuItem1.Name = "clearAllTilesToolStripMenuItem1";
-            this.clearAllTilesToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.clearAllTilesToolStripMenuItem1.Size = new System.Drawing.Size(145, 22);
             this.clearAllTilesToolStripMenuItem1.Text = "Clear All Tiles";
             this.clearAllTilesToolStripMenuItem1.Click += new System.EventHandler(this.clearAllTilesToolStripMenuItem1_Click);
             // 
@@ -697,56 +710,56 @@
             this.set14bppToolStripMenuItem.Checked = true;
             this.set14bppToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.set14bppToolStripMenuItem.Name = "set14bppToolStripMenuItem";
-            this.set14bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set14bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set14bppToolStripMenuItem.Text = "Set 1 4bpp";
             this.set14bppToolStripMenuItem.Click += new System.EventHandler(this.set14bppToolStripMenuItem_Click);
             // 
             // set24bppToolStripMenuItem
             // 
             this.set24bppToolStripMenuItem.Name = "set24bppToolStripMenuItem";
-            this.set24bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set24bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set24bppToolStripMenuItem.Text = "Set 2 4bpp";
             this.set24bppToolStripMenuItem.Click += new System.EventHandler(this.set24bppToolStripMenuItem_Click);
             // 
             // set34bppToolStripMenuItem
             // 
             this.set34bppToolStripMenuItem.Name = "set34bppToolStripMenuItem";
-            this.set34bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set34bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set34bppToolStripMenuItem.Text = "Set 3 4bpp";
             this.set34bppToolStripMenuItem.Click += new System.EventHandler(this.set32bppToolStripMenuItem_Click);
             // 
             // set44bppToolStripMenuItem
             // 
             this.set44bppToolStripMenuItem.Name = "set44bppToolStripMenuItem";
-            this.set44bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set44bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set44bppToolStripMenuItem.Text = "Set 4 4bpp";
             this.set44bppToolStripMenuItem.Click += new System.EventHandler(this.set44bppToolStripMenuItem_Click);
             // 
             // set52bppToolStripMenuItem
             // 
             this.set52bppToolStripMenuItem.Name = "set52bppToolStripMenuItem";
-            this.set52bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set52bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set52bppToolStripMenuItem.Text = "Set 5 2bpp";
             this.set52bppToolStripMenuItem.Click += new System.EventHandler(this.set52bppToolStripMenuItem_Click);
             // 
             // set62bppToolStripMenuItem
             // 
             this.set62bppToolStripMenuItem.Name = "set62bppToolStripMenuItem";
-            this.set62bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set62bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set62bppToolStripMenuItem.Text = "Set 6 2bpp";
             this.set62bppToolStripMenuItem.Click += new System.EventHandler(this.set62bppToolStripMenuItem_Click);
             // 
             // set72bppToolStripMenuItem
             // 
             this.set72bppToolStripMenuItem.Name = "set72bppToolStripMenuItem";
-            this.set72bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set72bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set72bppToolStripMenuItem.Text = "Set 7 2bpp";
             this.set72bppToolStripMenuItem.Click += new System.EventHandler(this.set72bppToolStripMenuItem_Click);
             // 
             // set82bppToolStripMenuItem
             // 
             this.set82bppToolStripMenuItem.Name = "set82bppToolStripMenuItem";
-            this.set82bppToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.set82bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set82bppToolStripMenuItem.Text = "Set 8 2bpp";
             this.set82bppToolStripMenuItem.Click += new System.EventHandler(this.set82bppToolStripMenuItem_Click);
             // 
@@ -834,11 +847,63 @@
             this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
+            // button2
+            // 
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.Location = new System.Drawing.Point(154, 27);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(20, 20);
+            this.button2.TabIndex = 39;
+            this.button2.Text = "◀";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button3
+            // 
+            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.Location = new System.Drawing.Point(180, 27);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(20, 20);
+            this.button3.TabIndex = 40;
+            this.button3.Text = "▶";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button4
+            // 
+            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button4.Location = new System.Drawing.Point(206, 27);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(20, 20);
+            this.button4.TabIndex = 41;
+            this.button4.Text = "▲";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // button5
+            // 
+            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button5.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button5.Location = new System.Drawing.Point(232, 27);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(20, 20);
+            this.button5.TabIndex = 42;
+            this.button5.Text = "▼";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 641);
+            this.Controls.Add(this.button5);
+            this.Controls.Add(this.button4);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.checkBox7);
             this.Controls.Add(this.textBox6);
@@ -877,7 +942,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.2";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.3";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -974,6 +1039,11 @@
         private System.Windows.Forms.ToolStripMenuItem x3ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x5ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem x2NextToolStripMenuItem;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.ToolStripMenuItem loadAMapToSelectedXYToolStripMenuItem;
     }
 }
 
