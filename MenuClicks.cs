@@ -201,10 +201,10 @@ namespace M1TE2
             big_array[0] = (byte)'M';
             big_array[1] = (byte)'1';
             big_array[2] = 1; // M1 file version
-            big_array[3] = 1; // # palettes
+            big_array[3] = 1; // # palettes (of 128 colors)
             big_array[4] = 3; // # maps
             big_array[5] = 4; // # 4bpp tilesets
-            big_array[6] = 1; // # 4bpp tilesets
+            big_array[6] = 4; // # 2bpp tilesets
             big_array[7] = (byte)map_height; // save map height
             // I don't use these values currently, but maybe will later.
 
@@ -762,7 +762,7 @@ namespace M1TE2
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
                 if (fs.Length >= 16) // at least one tile.
                 {
-                    size_temp_tiles = (int)fs.Length & 0xf000; // round down to nearest 1000
+                    size_temp_tiles = (int)fs.Length & 0xe000; // round down to nearest 2000
 
                     if (((int)fs.Length & 0x1fff) > 0) // handle weird sizes.
                     {
@@ -797,11 +797,7 @@ namespace M1TE2
                     }
                     if (size_temp_tiles == 0x4000) // middle size, 2 sets
                     {
-                        if (tile_set < 2)
-                        {
-                            offset_tiles_ar = 0;
-                        }
-                        else
+                        if (tile_set > 2)
                         {
                             offset_tiles_ar = 0x8000;
                         }
@@ -1871,7 +1867,7 @@ namespace M1TE2
         
         private void aboutM1TEToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.3");
+            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.4");
         }
         
 

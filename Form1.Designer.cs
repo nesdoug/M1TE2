@@ -942,7 +942,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.3";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.4";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();

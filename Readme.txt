@@ -1,4 +1,4 @@
-M1TE ver 1.3 (SNES Mode 1 Tile Editor) Feb 6, 2020
+M1TE ver 1.4 (SNES Mode 1 Tile Editor) Feb 27, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -34,7 +34,10 @@ version changes
     - added keys to copy/paste/delete colors in a palette
       Q = copy, W = paste, E = delete color 0000
     - fixed hex box to allow 1,2,or 3 digit entries.
-
+1.4 - Grid lines color adapts to the 0th color
+    - brush 2x2 next (pseudo 16x16) will flip 16x16
+      with Apply H Flip or Apply V flip checked
+    - added checkerboard fill if map height is < 32
 
 
 
@@ -90,10 +93,10 @@ Right click - get the color under the pointer
 Numberpad 2,4,6,8 to move to adjacent tile.
 Arrow keys to shift the image.
 F - fills a tile with selected color
-H - flip horizontal (notice the symetric shape of the letter W)
-V - flip vertical (notice the symetric shape of the letter E)
+H - flip horizontal (notice the symmetric shape of the letter W)
+V - flip vertical (notice the symmetric shape of the letter E)
 R - rotate clockwise
-L - rotate counter cockwise
+L - rotate counter clockwise
 Delete - fills with color 0 (transparent)
 C - copy, P - paste.
 (! these only work if this box is clicked/active !)
@@ -178,7 +181,9 @@ Native .M1 file format details...
 
 ///////////////////////////////////////////////
 TODO-
-select multiple tiles to place as a block.
+-select multiple tiles to place as a block.
+-save RLE compressions
+-16 bit mode
 ///////////////////////////////////////////////
 
 

@@ -73,8 +73,6 @@ namespace M1TE2
             int offset = 0;
             int temp_tile = 0;
             int temp_pal = 0;
-            //int temp_h = 0;
-            //int temp_v = 0;
             int z2 = 0;
 
             for (int y = 0; y < 256; y++) // fill with the 0th color first
@@ -145,7 +143,6 @@ namespace M1TE2
                         }
                     }
                 }
-
             }
 
 
@@ -175,6 +172,41 @@ namespace M1TE2
                 }
             }
 
+            // draw a checkerboard pattern over the unused portion of the map
+            if (map_height < 32)
+            {
+                Color checker_color = Color.SlateGray;
+                for (int y = map_height*8; y < 256; y++)
+                {
+                    for (int x = 0; x < 256; x++)
+                    {
+                        if ((y & 4) == 0)
+                        {
+                            if ((x & 4) == 0)
+                            {
+                                checker_color = Color.SlateGray;
+                            }
+                            else
+                            {
+                                checker_color = Color.LightSlateGray;
+                            }
+                        }
+                        else
+                        {
+                            if ((x & 4) == 0)
+                            {
+                                checker_color = Color.LightSlateGray;
+                            }
+                            else
+                            {
+                                checker_color = Color.SlateGray;
+                            }
+                        }
+
+                        image_map_local.SetPixel(x, y, checker_color);
+                    }
+                }
+            }
 
             //Bitmap temp_bmp2 = new Bitmap(512, 512); //resize double size
             using (Graphics g2 = Graphics.FromImage(temp_bmp2))
@@ -202,13 +234,20 @@ namespace M1TE2
                 //draw grid here
                 if (checkBox4.Checked == true)
                 {
+                    int addthem = Palettes.pal_r[0] + Palettes.pal_g[0] + Palettes.pal_b[0];
+                    Color grid_color = Color.White;
+                    if(addthem > 372)
+                    {
+                        grid_color = Color.Black;
+                    }
+
                     //draw horizontal lines at each 16
                     for (int i = 31; i < (map_height * 16); i += 32)
                     {
                         if (i == 511) break;
                         for (int j = 0; j < 512; j++)
                         {
-                            temp_bmp2.SetPixel(j, i, Color.White);
+                            temp_bmp2.SetPixel(j, i, grid_color);
                         }
                     }
                     //draw vertical lines at each 16
@@ -217,7 +256,7 @@ namespace M1TE2
                         for (int j = 31; j < 512; j += 32)
                         {
                             if (i == 511) break;
-                            temp_bmp2.SetPixel(j, i, Color.White);
+                            temp_bmp2.SetPixel(j, i, grid_color);
                         }
                     }
                 }
@@ -225,7 +264,6 @@ namespace M1TE2
 
             pictureBox1.Image = temp_bmp2;
             pictureBox1.Refresh();
-            //temp_bmp2.Dispose(); //crashes the program ?
         }
         // END UPDATE TILEMAP
 
@@ -337,15 +375,10 @@ namespace M1TE2
 
         private void update_box4() // when boxes 1,2,or 3 changed
         {
-            //int[] values = new int[3];
             int value_red, value_green, value_blue;
             int sum;
             int selection = get_selection();
 
-
-            //int.TryParse(textBox1.Text, out values[0]); //convert string to int
-            //int.TryParse(textBox2.Text, out values[1]);
-            //int.TryParse(textBox3.Text, out values[2]);
             value_red = Palettes.pal_r[selection];
             value_green = Palettes.pal_g[selection];
             value_blue = Palettes.pal_b[selection];
@@ -464,26 +497,10 @@ namespace M1TE2
 
         private int get_selection()
         {
-            
-            //string str = textBox1.Text;
             int selection = pal_x + (pal_y * 16);
             if ((map_view == 2) && ((pal_x & 3) == 0)) selection = 0; // 2bpp
             if (pal_x == 0) selection = 0;
             return selection;
-            /*int value = 0;
-            int.TryParse(str, out value);
-            Palettes.pal_r[selection] = (byte)value;
-
-            str = textBox2.Text;
-            value = 0;
-            int.TryParse(str, out value);
-            Palettes.pal_g[selection] = (byte)value;
-
-            str = textBox3.Text;
-            value = 0;
-            int.TryParse(str, out value);
-            Palettes.pal_b[selection] = (byte)value;
-            */
         }
 
 
@@ -501,14 +518,12 @@ namespace M1TE2
             value = check_num(str);
             textBox2.Text = value.ToString();
 
-            //selection = get_selection();
             Palettes.pal_g[selection] = (byte)value;
 
             str = textBox3.Text;
             value = check_num(str);
             textBox3.Text = value.ToString();
 
-            //selection = get_selection();
             Palettes.pal_b[selection] = (byte)value;
         }
 
@@ -599,8 +614,6 @@ namespace M1TE2
                 temp = ((value[1] & 0x0c) << 1) + ((value[0] & 0x07) << 5); // blue, 5 bits
                 textBox3.Text = temp.ToString();
 
-                //update the palette values, then draw it
-                //update_single_color();
                 update_rgb();
                 update_palette();
                 common_update2();
@@ -790,7 +803,14 @@ namespace M1TE2
         {
             // apply the tile now
             int temp_y, temp_x, start_x, loop_x, loop_y;
-            if(brushsize == BRUSH1x1)
+            int next_count = 0;
+            int[] next_tiles = new int [5]; // actually 4
+
+            // which tile is selected on right.
+            int temp_set = tile_set & 3; //0-3
+            int tile_num2 = tile_x + (tile_y * 16) + (256 * temp_set); // 0-1023
+
+            if (brushsize == BRUSH1x1)
             {
                 start_x = temp_x = active_map_x;
                 temp_y = active_map_y;
@@ -817,11 +837,46 @@ namespace M1TE2
                 temp_y = active_map_y;
                 loop_x = 2;
                 loop_y = 2;
+                if (checkBox5.Checked == false) // h flip no
+                {
+                    if (checkBox6.Checked == false) // v flip no
+                    {
+                        next_tiles[0] = tile_num2;
+                        next_tiles[1] = (tile_num2 + 1) & 0x3ff;
+                        next_tiles[2] = (tile_num2 + 16) & 0x3ff;
+                        next_tiles[3] = (tile_num2 + 17) & 0x3ff;
+                    }
+                    else // v flip yes
+                    {
+                        next_tiles[0] = (tile_num2 + 16) & 0x3ff;
+                        next_tiles[1] = (tile_num2 + 17) & 0x3ff;
+                        next_tiles[2] = tile_num2;
+                        next_tiles[3] = (tile_num2 + 1) & 0x3ff;
+                    }
+                }
+                else // h flip yes
+                {
+                    if (checkBox6.Checked == false) // v flip no
+                    {
+                        next_tiles[0] = (tile_num2 + 1) & 0x3ff;
+                        next_tiles[1] = tile_num2;
+                        next_tiles[2] = (tile_num2 + 17) & 0x3ff;
+                        next_tiles[3] = (tile_num2 + 16) & 0x3ff;
+                    }
+                    else // v flip yes, both flipped
+                    {
+                        next_tiles[0] = (tile_num2 + 17) & 0x3ff;
+                        next_tiles[1] = (tile_num2 + 16) & 0x3ff;
+                        next_tiles[2] = (tile_num2 + 1) & 0x3ff;
+                        next_tiles[3] = tile_num2;
+                    }
+                }
+
+                tile_num2 = next_tiles[0];
             }
 
-            int temp_set = tile_set & 3; //0-3
-            int tile_num2 = tile_x + (tile_y * 16) + (256 * temp_set); // 0-1023
-            // which tile is selected on right.
+            
+            
 
             // nested loop of tile changes, per brush size.
             for (int yy = 0; yy < loop_y; yy++)
@@ -877,16 +932,18 @@ namespace M1TE2
 
                     if(brushsize == BRUSHNEXT)
                     {
-                        tile_num2++;
-                        tile_num2 &= 0x3ff;
+                        //tile_num2++;
+                        //tile_num2 &= 0x3ff;
+                        next_count++;
+                        tile_num2 = next_tiles[next_count];
                     }
                     temp_x++;
                 }
-                if (brushsize == BRUSHNEXT)
-                {
-                    tile_num2 = tile_num2 + 14;
-                    tile_num2 &= 0x3ff;
-                }
+                //if (brushsize == BRUSHNEXT)
+                //{
+                    //tile_num2 = tile_num2 + 14;
+                    //tile_num2 &= 0x3ff;
+                //}
                 temp_x = start_x;
                 temp_y++;
             }
@@ -929,7 +986,6 @@ namespace M1TE2
                 last_tile_x = active_map_x; // to speed up the app
                 last_tile_y = active_map_y; // see mouse move event
                 picbox1_sub(); // place the tile and redraw the map
-                //checkBox3.Checked = false;
                 update_tilemap();
             }
             else if (e.Button == MouseButtons.Right) // get the tile, tileset, and properties
@@ -941,8 +997,6 @@ namespace M1TE2
                 else checkBox1.Checked = true;
                 if (Maps.v_flip[tile] == 0) checkBox2.Checked = false;
                 else checkBox2.Checked = true;
-                //if (Maps.priority[tile] == 0) checkBox3.Checked = false;
-                //else checkBox3.Checked = true;
                 int set = (Maps.tile[tile] & 0x300) >> 8;
                 int tile2 = Maps.tile[tile] & 0xff;
                 tile_x = tile2 & 0x0f;
@@ -987,7 +1041,6 @@ namespace M1TE2
                         tile_set = 3;
                         set44bppToolStripMenuItem.Checked = true;
                     }
-                    //update_tile_image();
                 }
                 else //2bpp
                 {
@@ -1017,7 +1070,6 @@ namespace M1TE2
                         tile_set = 7;
                         set82bppToolStripMenuItem.Checked = true;
                     }
-                    //update_tile_image();
 
                     // was...
                     pal_y = (pal >> 2);
@@ -1080,47 +1132,39 @@ namespace M1TE2
             if (e.KeyCode == Keys.C)
             {
                 Tiles.tile_copy();
-                //common_update2();
             }
             else if (e.KeyCode == Keys.P)
             {
                 Tiles.tile_paste();
-                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad4) 
             {
                 if (tile_x > 0) tile_x--;
                 tile_num = (tile_y * 16) + tile_x;
-                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad8)
             {
                 if (tile_y > 0) tile_y--;
                 tile_num = (tile_y * 16) + tile_x;
-                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad6)
             {
                 if (tile_x < 15) tile_x++;
                 tile_num = (tile_y * 16) + tile_x;
-                //common_update2();
             }
             else if (e.KeyCode == Keys.NumPad2)
             {
                 if (tile_y < 15) tile_y++;
                 tile_num = (tile_y * 16) + tile_x;
-                //common_update2();
             }
             else if (e.KeyCode == Keys.Q)
             { // copy selected color
-                //int selection = pal_x + (pal_y * 16);
                 pal_r_copy = Palettes.pal_r[selection];
                 pal_g_copy = Palettes.pal_g[selection];
                 pal_b_copy = Palettes.pal_b[selection];
             }
             else if (e.KeyCode == Keys.W)
             { // paste selected to color
-                //int selection = pal_x + (pal_y * 16);
                 Palettes.pal_r[selection] = (byte)pal_r_copy;
                 Palettes.pal_g[selection] = (byte)pal_g_copy;
                 Palettes.pal_b[selection] = (byte)pal_b_copy;
@@ -1132,7 +1176,6 @@ namespace M1TE2
             }
             else if (e.KeyCode == Keys.E)
             { // clear selected to color
-                //int selection = pal_x + (pal_y * 16);
                 Palettes.pal_r[selection] = 0;
                 Palettes.pal_g[selection] = 0;
                 Palettes.pal_b[selection] = 0;
@@ -1406,11 +1449,9 @@ namespace M1TE2
         { // priority (entire map)
             if (map_view > 2) return;
 
-            //active_map_index = active_map_x + (active_map_y * 32) + (32 * 32 * map_view);
             int offset = map_view * 32 * 32;
             if (checkBox3.Checked == false)
             {
-                //Maps.priority[active_map_index] = 0;
                 for(int i = 0; i < 32*32; i++)
                 {
                     Maps.priority[offset++] = 0;
@@ -1418,7 +1459,6 @@ namespace M1TE2
             }
             else
             {
-                //Maps.priority[active_map_index] = 1;
                 for (int i = 0; i < 32 * 32; i++)
                 {
                     Maps.priority[offset++] = 1;
@@ -1551,7 +1591,6 @@ namespace M1TE2
             
             
             image_pal = temp_bmp3;
-            //temp_bm.Dispose(); //crashes the program ?
             temp_brush.Dispose();
         } // END DRAW PALETTES
 
@@ -1587,7 +1626,7 @@ namespace M1TE2
             Palettes.pal_b[16 * 6] = zero;
             Palettes.pal_b[16 * 7] = zero;
 
-            //int selected = pal_x + (pal_y * 8); //which palette square
+            // which palette square
             int xx = pal_x * 16;
             int yy = pal_y * 32;
 
