@@ -1,4 +1,4 @@
-M1TE ver 1.4 (SNES Mode 1 Tile Editor) Feb 27, 2020
+M1TE ver 1.5 (SNES Mode 1 Tile Editor) Mar 15, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -38,6 +38,12 @@ version changes
     - brush 2x2 next (pseudo 16x16) will flip 16x16
       with Apply H Flip or Apply V flip checked
     - added checkerboard fill if map height is < 32
+1.5 - RLE option to save map or tiles
+    - fixed, forgot to allow save 2bpp x 1 from sets 6,7,8
+
+Note, the RLE is a special compression format that I wrote, 
+specifically for SNES maps (but could be used for tiles).
+See unrle.txt (or my SNES projects) for decompression code.
 
 
 
@@ -139,6 +145,10 @@ larger areas of the screen with the same tile.
 of the selected tile in a 2x2 block on the screen. This might be
 useful if the tileset has tiles arranged in 16x16 blocks.
 
+HELPFUL TIP! - If the tiles are in order of how they go on the map...
+1,2,3,4,5, etc should go from left to right on the map... Hit the
+Number pad 6 key as you click on spots on the map.
+
 
 
 Menu
@@ -182,8 +192,7 @@ Native .M1 file format details...
 ///////////////////////////////////////////////
 TODO-
 -select multiple tiles to place as a block.
--save RLE compressions
--16 bit mode
+-16x16 view mode
 ///////////////////////////////////////////////
 
 

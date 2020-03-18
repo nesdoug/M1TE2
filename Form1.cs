@@ -45,6 +45,8 @@ namespace M1TE2
         public const int BRUSH5x5 = 2;
         public const int BRUSHNEXT = 3;
         public static int pal_r_copy, pal_g_copy, pal_b_copy;
+        public static byte[] rle_array = new byte[65536];
+        public static int rle_index, rle_index2, rle_count;
 
         private void Form1_Load(object sender, EventArgs e)
         {
