@@ -1567,10 +1567,19 @@ namespace M1TE2
 
                     // update the numbers in the boxes
                     temp = pal_x + (pal_y * 16);
-                    textBox1.Text = Palettes.pal_r[temp].ToString();
-                    textBox2.Text = Palettes.pal_g[temp].ToString();
-                    textBox3.Text = Palettes.pal_b[temp].ToString();
                     
+                    int red = Palettes.pal_r[temp];
+                    textBox1.Text = red.ToString();
+                    trackBar1.Value = red / 8;
+
+                    int green = Palettes.pal_g[temp];
+                    textBox2.Text = green.ToString();
+                    trackBar2.Value = green / 8;
+
+                    int blue = Palettes.pal_b[temp];
+                    textBox3.Text = blue.ToString();
+                    trackBar3.Value = blue / 8;
+
                     update_box4();
                     update_palette();
                     common_update2();
@@ -1629,9 +1638,18 @@ namespace M1TE2
 
                     // update the numbers in the boxes
                     temp = pal_x + (pal_y * 16);
-                    textBox1.Text = Palettes.pal_r[temp].ToString();
-                    textBox2.Text = Palettes.pal_g[temp].ToString();
-                    textBox3.Text = Palettes.pal_b[temp].ToString();
+                    
+                    int red = Palettes.pal_r[temp];
+                    textBox1.Text = red.ToString();
+                    trackBar1.Value = red / 8;
+
+                    int green = Palettes.pal_g[temp];
+                    textBox2.Text = green.ToString();
+                    trackBar2.Value = green / 8;
+
+                    int blue = Palettes.pal_b[temp];
+                    textBox3.Text = blue.ToString();
+                    trackBar3.Value = blue / 8;
 
                     update_box4();
                     update_palette();
@@ -1686,9 +1704,18 @@ namespace M1TE2
 
                     // update the numbers in the boxes
                     temp = pal_x + (pal_y * 16);
-                    textBox1.Text = Palettes.pal_r[temp].ToString();
-                    textBox2.Text = Palettes.pal_g[temp].ToString();
-                    textBox3.Text = Palettes.pal_b[temp].ToString();
+                    
+                    int red = Palettes.pal_r[temp];
+                    textBox1.Text = red.ToString();
+                    trackBar1.Value = red / 8;
+
+                    int green = Palettes.pal_g[temp];
+                    textBox2.Text = green.ToString();
+                    trackBar2.Value = green / 8;
+
+                    int blue = Palettes.pal_b[temp];
+                    textBox3.Text = blue.ToString();
+                    trackBar3.Value = blue / 8;
 
                     update_box4();
                     update_palette();
@@ -2320,7 +2347,7 @@ namespace M1TE2
         
         private void aboutM1TEToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.5");
+            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.6");
         }
         
 

@@ -37,16 +37,20 @@ namespace M1TE2
         public static Bitmap temp_bmp3 = new Bitmap(256, 256); //double size
         public static int pal_x, pal_y, tile_x, tile_y, tile_num, tile_set;
         public static int map_view, active_map_x, active_map_y, active_map_index;
-        public static int map_height = 32;
+        public static int map_height = 28;
         public static int last_tile_x, last_tile_y;
         public static int brushsize;
         public const int BRUSH1x1 = 0;
         public const int BRUSH3x3 = 1;
         public const int BRUSH5x5 = 2;
         public const int BRUSHNEXT = 3;
+        public const int BRUSH_CLONE_T = 4;
+        public const int BRUSH_CLONE_M = 5;
+        public const int BRUSH_FILL = 6;
         public static int pal_r_copy, pal_g_copy, pal_b_copy;
         public static byte[] rle_array = new byte[65536];
         public static int rle_index, rle_index2, rle_count;
+        public static int map_clone_x, map_clone_y, clone_start_x, clone_start_y;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -512,6 +516,7 @@ namespace M1TE2
             string str = textBox1.Text;
             int value = check_num(str);
             textBox1.Text = value.ToString();
+            trackBar1.Value = value / 8;
 
             int selection = get_selection();
             Palettes.pal_r[selection] = (byte)value;
@@ -519,12 +524,14 @@ namespace M1TE2
             str = textBox2.Text;
             value = check_num(str);
             textBox2.Text = value.ToString();
+            trackBar2.Value = value / 8;
 
             Palettes.pal_g[selection] = (byte)value;
 
             str = textBox3.Text;
             value = check_num(str);
             textBox3.Text = value.ToString();
+            trackBar3.Value = value / 8;
 
             Palettes.pal_b[selection] = (byte)value;
         }
@@ -833,7 +840,7 @@ namespace M1TE2
                 loop_x = 5;
                 loop_y = 5;
             }
-            else // BRUSHNEXT
+            else if (brushsize == BRUSHNEXT)
             {
                 start_x = temp_x = active_map_x;
                 temp_y = active_map_y;
@@ -876,9 +883,63 @@ namespace M1TE2
 
                 tile_num2 = next_tiles[0];
             }
+            else if ((brushsize == BRUSH_CLONE_T) || (brushsize == BRUSH_CLONE_M))
+            {
+                
+                loop_x = 1;
+                loop_y = 1;
+                
+                if (brushsize == BRUSH_CLONE_T)
+                { // clone from tileset
+                    // get distance in tiles 
+                    temp_x = (active_map_x - clone_start_x) + tile_x;
+                    if ((temp_x < 0) || (temp_x > 15)) return;
+                    
+                    temp_y = (active_map_y - clone_start_y) + tile_y;
+                    if ((temp_y < 0) || (temp_y > 15)) return;
+                    
+                    tile_num2 = temp_x + (temp_y * 16) + (256 * temp_set); // 0-1023
 
-            
-            
+                    start_x = temp_x = active_map_x;
+                    temp_y = active_map_y;
+                }
+                else // clone from map
+                {
+                    int temp_x2, temp_y2, active_map_index2;
+
+                    temp_x2 = (active_map_x - clone_start_x) + map_clone_x;
+                    if ((temp_x2 < 0) || (temp_x2 > 31)) return;
+
+                    temp_y2 = (active_map_y - clone_start_y) + map_clone_y;
+                    if ((temp_y2 < 0) || (temp_y2 >= map_height)) return;
+                    label5.Text = temp_x2.ToString();
+                    label10.Text = temp_y2.ToString();
+
+                    temp_x = active_map_x;
+                    temp_y = active_map_y;
+
+
+                    active_map_index = temp_x + (temp_y * 32) + (32 * 32 * map_view);
+                    active_map_index2 = temp_x2 + (temp_y2 * 32) + (32 * 32 * map_view);
+                    Maps.tile[active_map_index] = Maps.tile[active_map_index2];
+                    Maps.palette[active_map_index] = Maps.palette[active_map_index2];
+                    Maps.h_flip[active_map_index] = Maps.h_flip[active_map_index2];
+                    Maps.v_flip[active_map_index] = Maps.v_flip[active_map_index2];
+                    Maps.priority[active_map_index] = Maps.priority[active_map_index2];
+
+                    return; // must return when done.
+                }
+            }
+            else // brush = fill screen
+            {
+                start_x = temp_x = 0;
+                temp_y = 0;
+                loop_x = 32;
+                loop_y = map_height;
+            }
+
+
+
 
             // nested loop of tile changes, per brush size.
             for (int yy = 0; yy < loop_y; yy++)
@@ -941,11 +1002,7 @@ namespace M1TE2
                     }
                     temp_x++;
                 }
-                //if (brushsize == BRUSHNEXT)
-                //{
-                    //tile_num2 = tile_num2 + 14;
-                    //tile_num2 &= 0x3ff;
-                //}
+                
                 temp_x = start_x;
                 temp_y++;
             }
@@ -956,15 +1013,32 @@ namespace M1TE2
         }
 
 
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if(brushsize == BRUSH_CLONE_M)
+            {
+                var mouseEventArgs = e as MouseEventArgs;
+                if (mouseEventArgs == null) return;
+                if (e.Button == MouseButtons.Left)
+                {
+                    active_map_x = map_clone_x;
+                    active_map_y = map_clone_y;
+                    label12.Text = "X = " + map_clone_x.ToString(); // change the numbers at the top
+                    label13.Text = "Y = " + map_clone_y.ToString();
+                    update_palette();
+                    common_update2();
+                }
+            }
+        }
 
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
-        { // TILEMAP
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        { // tilemap
             if (map_view > 2)
             {
                 MessageBox.Show("Editing is disabled in Preview Mode.");
                 return;
             }
-
+            
             active_map_x = 0; active_map_y = 0;
             var mouseEventArgs = e as MouseEventArgs;
             if (mouseEventArgs != null)
@@ -985,6 +1059,10 @@ namespace M1TE2
 
             if (e.Button == MouseButtons.Left)
             {
+                clone_start_x = active_map_x;
+                clone_start_y = active_map_y;
+                
+
                 last_tile_x = active_map_x; // to speed up the app
                 last_tile_y = active_map_y; // see mouse move event
                 picbox1_sub(); // place the tile and redraw the map
@@ -992,6 +1070,9 @@ namespace M1TE2
             }
             else if (e.Button == MouseButtons.Right) // get the tile, tileset, and properties
             {
+                map_clone_x = active_map_x;
+                map_clone_y = active_map_y;
+
                 int tile = (map_view * 32 * 32) + (32 * active_map_y) + active_map_x;
                 int pal = Maps.palette[tile];
                 textBox5.Text = pal.ToString();
@@ -1081,6 +1162,12 @@ namespace M1TE2
                 update_palette();
                 common_update2();
             }
+
+        } // end tilemap
+
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        { // TILEMAP
+            
         } // END CLICKED ON TILEMAP
 
 
@@ -1131,22 +1218,35 @@ namespace M1TE2
         {
             int selection = pal_x + (pal_y * 16);
 
-            if (e.KeyCode == Keys.C)
+            if (e.KeyCode == Keys.Left)
             {
-                Tiles.tile_copy();
+                e.IsInputKey = true;
+                Tiles.shift_left();
             }
-            else if (e.KeyCode == Keys.P)
+            else if (e.KeyCode == Keys.Up)
             {
-                Tiles.tile_paste();
+                e.IsInputKey = true;
+                Tiles.shift_up();
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
+                e.IsInputKey = true;
+                Tiles.shift_right();
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+                e.IsInputKey = true;
+                Tiles.shift_down();
+            }
+            
+            else if (e.KeyCode == Keys.NumPad2)
+            {
+                if (tile_y < 15) tile_y++;
+                tile_num = (tile_y * 16) + tile_x;
             }
             else if (e.KeyCode == Keys.NumPad4) 
             {
                 if (tile_x > 0) tile_x--;
-                tile_num = (tile_y * 16) + tile_x;
-            }
-            else if (e.KeyCode == Keys.NumPad8)
-            {
-                if (tile_y > 0) tile_y--;
                 tile_num = (tile_y * 16) + tile_x;
             }
             else if (e.KeyCode == Keys.NumPad6)
@@ -1154,19 +1254,52 @@ namespace M1TE2
                 if (tile_x < 15) tile_x++;
                 tile_num = (tile_y * 16) + tile_x;
             }
-            else if (e.KeyCode == Keys.NumPad2)
+            else if (e.KeyCode == Keys.NumPad8)
             {
-                if (tile_y < 15) tile_y++;
+                if (tile_y > 0) tile_y--;
                 tile_num = (tile_y * 16) + tile_x;
             }
+            else if (e.KeyCode == Keys.H)
+            {
+                Tiles.tile_h_flip();
+            }
+            else if (e.KeyCode == Keys.V)
+            {
+                Tiles.tile_v_flip();
+            }
+            else if (e.KeyCode == Keys.R)
+            {
+                Tiles.tile_rot_cw();
+            }
+            else if (e.KeyCode == Keys.L)
+            {
+                Tiles.tile_rot_ccw();
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                Tiles.tile_delete();
+            }
+            else if (e.KeyCode == Keys.C)
+            {
+                Tiles.tile_copy();
+            }
+            else if (e.KeyCode == Keys.P)
+            {
+                Tiles.tile_paste();
+            }
+            else if (e.KeyCode == Keys.F)
+            {
+                Tiles.tile_fill();
+            }
+
             else if (e.KeyCode == Keys.Q)
-            { // copy selected color
+            { // palette copy selected color
                 pal_r_copy = Palettes.pal_r[selection];
                 pal_g_copy = Palettes.pal_g[selection];
                 pal_b_copy = Palettes.pal_b[selection];
             }
             else if (e.KeyCode == Keys.W)
-            { // paste selected to color
+            { // palette paste selected to color
                 Palettes.pal_r[selection] = (byte)pal_r_copy;
                 Palettes.pal_g[selection] = (byte)pal_g_copy;
                 Palettes.pal_b[selection] = (byte)pal_b_copy;
@@ -1177,7 +1310,7 @@ namespace M1TE2
                 update_box4();
             }
             else if (e.KeyCode == Keys.E)
-            { // clear selected to color
+            { // palette clear selected to color
                 Palettes.pal_r[selection] = 0;
                 Palettes.pal_g[selection] = 0;
                 Palettes.pal_b[selection] = 0;
@@ -1189,6 +1322,8 @@ namespace M1TE2
             }
 
             common_update2();
+            // prevent change in focus
+            label5.Focus();
         }
 
         
@@ -1215,6 +1350,9 @@ namespace M1TE2
             x3ToolStripMenuItem.Checked = false;
             x5ToolStripMenuItem.Checked = false;
             x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
         }
 
         private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1224,6 +1362,9 @@ namespace M1TE2
             x3ToolStripMenuItem.Checked = true;
             x5ToolStripMenuItem.Checked = false;
             x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
         }
 
         private void x5ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1233,6 +1374,103 @@ namespace M1TE2
             x3ToolStripMenuItem.Checked = false;
             x5ToolStripMenuItem.Checked = true;
             x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+        }
+
+        private void fillTopRowWithColorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int save_num = tile_num;
+            int save_pal = pal_x;
+            tile_num = 0;
+            pal_x = 0;
+            for(int a = 0; a < 16; a++)
+            {
+                Tiles.tile_fill();
+                tile_num++;
+                pal_x++;
+            }
+
+            tile_num = save_num;
+            pal_x = save_pal;
+            common_update2();
+        }
+
+        private void trackBar1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                int val = trackBar1.Value * 8;
+                textBox1.Text = val.ToString();
+
+                update_rgb();
+                update_box4();
+
+                update_palette();
+
+                common_update2();
+            }
+        }
+
+        private void trackBar2_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                int val = trackBar2.Value * 8;
+                textBox2.Text = val.ToString();
+
+                update_rgb();
+                update_box4();
+
+                update_palette();
+
+                common_update2();
+            }
+        }
+
+        private void trackBar3_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                int val = trackBar3.Value * 8;
+                textBox3.Text = val.ToString();
+
+                update_rgb();
+                update_box4();
+
+                update_palette();
+
+                common_update2();
+            }
+        }
+
+        private void fillScreenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //BRUSH_FILL
+            brushsize = BRUSH_FILL;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = true;
+        }
+
+        private void trackBar1_MouseUp(object sender, MouseEventArgs e)
+        {
+            label5.Focus();
+        }
+
+        private void trackBar2_MouseUp(object sender, MouseEventArgs e)
+        {
+            label5.Focus();
+        }
+
+        private void trackBar3_MouseUp(object sender, MouseEventArgs e)
+        {
+            label5.Focus();
         }
 
         private void x2NextToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1242,6 +1480,33 @@ namespace M1TE2
             x3ToolStripMenuItem.Checked = false;
             x5ToolStripMenuItem.Checked = false;
             x2NextToolStripMenuItem.Checked = true;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+        }
+
+        private void cloneFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            brushsize = BRUSH_CLONE_T;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = true;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+        }
+
+        private void cloneFromMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            brushsize = BRUSH_CLONE_M;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = true;
+            fillScreenToolStripMenuItem.Checked = false;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -1393,7 +1658,7 @@ namespace M1TE2
         
 
         private void button1_Click(object sender, EventArgs e)
-        {
+        { // color picker
             if(colorDialog1.ShowDialog() == DialogResult.OK)
             {
                 Color tempcolor = colorDialog1.Color;
@@ -1403,7 +1668,8 @@ namespace M1TE2
                 textBox1.Text = red.ToString();
                 textBox2.Text = green.ToString();
                 textBox3.Text = blue.ToString();
-                update_rgb();
+                
+                update_rgb(); //updates trackbars too
                 update_box4();
                 update_palette();
                 common_update2();
@@ -1681,9 +1947,17 @@ namespace M1TE2
                 update_palette();
 
                 //update the boxes
-                textBox1.Text = Palettes.pal_r[selection].ToString();
-                textBox2.Text = Palettes.pal_g[selection].ToString();
-                textBox3.Text = Palettes.pal_b[selection].ToString();
+                int red = Palettes.pal_r[selection];
+                textBox1.Text = red.ToString();
+                trackBar1.Value = red / 8;
+
+                int green = Palettes.pal_g[selection];
+                textBox2.Text = green.ToString();
+                trackBar2.Value = green / 8;
+
+                int blue = Palettes.pal_b[selection];
+                textBox3.Text = blue.ToString();
+                trackBar3.Value = blue / 8;
                 update_box4();
             }
 

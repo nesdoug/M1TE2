@@ -1,4 +1,4 @@
-M1TE ver 1.5 (SNES Mode 1 Tile Editor) Mar 15, 2020
+M1TE ver 1.6 (SNES Mode 1 Tile Editor) May 20, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -40,6 +40,13 @@ version changes
     - added checkerboard fill if map height is < 32
 1.5 - RLE option to save map or tiles
     - fixed, forgot to allow save 2bpp x 1 from sets 6,7,8
+1.6 - clone from tiles or from map (brush)
+    - fill map with tile (brush), or recolor entire map
+      if "palette only" is checked
+    - can use all key commands outside tile edit form
+    - added slider bars for color
+    - changed default map height to 28
+
 
 Note, the RLE is a special compression format that I wrote, 
 specifically for SNES maps (but could be used for tiles).
@@ -104,8 +111,8 @@ V - flip vertical (notice the symmetric shape of the letter E)
 R - rotate clockwise
 L - rotate counter clockwise
 Delete - fills with color 0 (transparent)
-C - copy, P - paste.
-(! these only work if this box is clicked/active !)
+C - copy
+P - paste
 
 
 
@@ -141,13 +148,19 @@ Brushsize
 Brushes are for the map. 1x1 means place the current tile.
 3x3 and 5x5 will place multiples of the same tile. It is for painting
 larger areas of the screen with the same tile.
+
 2x2 next is a pseudo 16x16 placement. It places x, x+1, x+$10, x+$11
 of the selected tile in a 2x2 block on the screen. This might be
 useful if the tileset has tiles arranged in 16x16 blocks.
 
-HELPFUL TIP! - If the tiles are in order of how they go on the map...
-1,2,3,4,5, etc should go from left to right on the map... Hit the
-Number pad 6 key as you click on spots on the map.
+Clone from Tiles and Clone from Map. Right click to select the
+starting tile. Click and drag on the map will place tiles,
+copying from the source. No wrap around allowed.
+
+Fill the Map - click on a map to fill it with the selected tile.
+If "palette only" is checked, it will change the palette of the map.
+
+HELPFUL TIP! - Use Number pad 2,4,6,8 to switch to adjacent tile.
 
 
 
@@ -191,7 +204,6 @@ Native .M1 file format details...
 
 ///////////////////////////////////////////////
 TODO-
--select multiple tiles to place as a block.
 -16x16 view mode
 ///////////////////////////////////////////////
 
