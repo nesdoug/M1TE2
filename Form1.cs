@@ -1304,9 +1304,17 @@ namespace M1TE2
                 Palettes.pal_g[selection] = (byte)pal_g_copy;
                 Palettes.pal_b[selection] = (byte)pal_b_copy;
                 update_palette();
-                textBox1.Text = Palettes.pal_r[selection].ToString();
-                textBox2.Text = Palettes.pal_g[selection].ToString();
-                textBox3.Text = Palettes.pal_b[selection].ToString();
+                int red = Palettes.pal_r[selection];
+                textBox1.Text = red.ToString();
+                trackBar1.Value = red / 8;
+
+                int green = Palettes.pal_g[selection];
+                textBox2.Text = green.ToString();
+                trackBar2.Value = green / 8;
+
+                int blue = Palettes.pal_b[selection];
+                textBox3.Text = blue.ToString();
+                trackBar3.Value = blue / 8;
                 update_box4();
             }
             else if (e.KeyCode == Keys.E)
@@ -1315,9 +1323,17 @@ namespace M1TE2
                 Palettes.pal_g[selection] = 0;
                 Palettes.pal_b[selection] = 0;
                 update_palette();
-                textBox1.Text = Palettes.pal_r[selection].ToString();
-                textBox2.Text = Palettes.pal_g[selection].ToString();
-                textBox3.Text = Palettes.pal_b[selection].ToString();
+                int red = Palettes.pal_r[selection];
+                textBox1.Text = red.ToString();
+                trackBar1.Value = red / 8;
+
+                int green = Palettes.pal_g[selection];
+                textBox2.Text = green.ToString();
+                trackBar2.Value = green / 8;
+
+                int blue = Palettes.pal_b[selection];
+                textBox3.Text = blue.ToString();
+                trackBar3.Value = blue / 8;
                 update_box4();
             }
 

@@ -46,6 +46,7 @@ version changes
     - can use all key commands outside tile edit form
     - added slider bars for color
     - changed default map height to 28
+1.7 - minor fix slider bar updating
 
 
 Note, the RLE is a special compression format that I wrote, 

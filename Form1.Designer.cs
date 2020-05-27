@@ -532,68 +532,68 @@
             this.clearAllTilesToolStripMenuItem1,
             this.fillTopRowWithColorsToolStripMenuItem});
             this.tilesToolStripMenuItem.Name = "tilesToolStripMenuItem";
-            this.tilesToolStripMenuItem.Size = new System.Drawing.Size(42, 20);
+            this.tilesToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.tilesToolStripMenuItem.Text = "Tiles";
             // 
             // load2bppSNESToolStripMenuItem
             // 
             this.load2bppSNESToolStripMenuItem.Name = "load2bppSNESToolStripMenuItem";
-            this.load2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.load2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.load2bppSNESToolStripMenuItem.Text = "Load 2bpp";
             this.load2bppSNESToolStripMenuItem.Click += new System.EventHandler(this.load2bppSNESToolStripMenuItem_Click);
             // 
             // load4bppSNESToolStripMenuItem
             // 
             this.load4bppSNESToolStripMenuItem.Name = "load4bppSNESToolStripMenuItem";
-            this.load4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.load4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.load4bppSNESToolStripMenuItem.Text = "Load 4bpp";
             this.load4bppSNESToolStripMenuItem.Click += new System.EventHandler(this.load4bppSNESToolStripMenuItem_Click);
             // 
             // save2bppSNESToolStripMenuItem
             // 
             this.save2bppSNESToolStripMenuItem.Name = "save2bppSNESToolStripMenuItem";
-            this.save2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.save2bppSNESToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.save2bppSNESToolStripMenuItem.Text = "Save 2bpp x 1";
             this.save2bppSNESToolStripMenuItem.Click += new System.EventHandler(this.save2bppSNESToolStripMenuItem_Click);
             // 
             // save2bppX4ToolStripMenuItem
             // 
             this.save2bppX4ToolStripMenuItem.Name = "save2bppX4ToolStripMenuItem";
-            this.save2bppX4ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.save2bppX4ToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.save2bppX4ToolStripMenuItem.Text = "Save 2bpp x 4";
             this.save2bppX4ToolStripMenuItem.Click += new System.EventHandler(this.save2bppX4ToolStripMenuItem_Click);
             // 
             // save4bppSNESToolStripMenuItem
             // 
             this.save4bppSNESToolStripMenuItem.Name = "save4bppSNESToolStripMenuItem";
-            this.save4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.save4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.save4bppSNESToolStripMenuItem.Text = "Save 4bpp x 1";
             this.save4bppSNESToolStripMenuItem.Click += new System.EventHandler(this.save4bppSNESToolStripMenuItem_Click);
             // 
             // save4bppX4ToolStripMenuItem
             // 
             this.save4bppX4ToolStripMenuItem.Name = "save4bppX4ToolStripMenuItem";
-            this.save4bppX4ToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.save4bppX4ToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.save4bppX4ToolStripMenuItem.Text = "Save 4bpp x 4";
             this.save4bppX4ToolStripMenuItem.Click += new System.EventHandler(this.save4bppX4ToolStripMenuItem_Click);
             // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(202, 22);
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(204, 22);
             this.toolStripMenuItem4.Text = " ";
             // 
             // clearAllTilesToolStripMenuItem1
             // 
             this.clearAllTilesToolStripMenuItem1.Name = "clearAllTilesToolStripMenuItem1";
-            this.clearAllTilesToolStripMenuItem1.Size = new System.Drawing.Size(202, 22);
+            this.clearAllTilesToolStripMenuItem1.Size = new System.Drawing.Size(204, 22);
             this.clearAllTilesToolStripMenuItem1.Text = "Clear All Tiles";
             this.clearAllTilesToolStripMenuItem1.Click += new System.EventHandler(this.clearAllTilesToolStripMenuItem1_Click);
             // 
             // fillTopRowWithColorsToolStripMenuItem
             // 
             this.fillTopRowWithColorsToolStripMenuItem.Name = "fillTopRowWithColorsToolStripMenuItem";
-            this.fillTopRowWithColorsToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            this.fillTopRowWithColorsToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.fillTopRowWithColorsToolStripMenuItem.Text = "Fill Top Row With Colors";
             this.fillTopRowWithColorsToolStripMenuItem.Click += new System.EventHandler(this.fillTopRowWithColorsToolStripMenuItem_Click);
             // 
@@ -722,7 +722,7 @@
             this.set72bppToolStripMenuItem,
             this.set82bppToolStripMenuItem});
             this.tilesetToolStripMenuItem.Name = "tilesetToolStripMenuItem";
-            this.tilesetToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.tilesetToolStripMenuItem.Size = new System.Drawing.Size(53, 20);
             this.tilesetToolStripMenuItem.Text = "Tileset";
             // 
             // set14bppToolStripMenuItem
@@ -794,7 +794,7 @@
             // aboutM1TEToolStripMenuItem
             // 
             this.aboutM1TEToolStripMenuItem.Name = "aboutM1TEToolStripMenuItem";
-            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.aboutM1TEToolStripMenuItem.Text = "About M1TE";
             this.aboutM1TEToolStripMenuItem.Click += new System.EventHandler(this.aboutM1TEToolStripMenuItem_Click);
             // 
@@ -834,49 +834,49 @@
             this.x1ToolStripMenuItem.Checked = true;
             this.x1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x1ToolStripMenuItem.Name = "x1ToolStripMenuItem";
-            this.x1ToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.x1ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.x1ToolStripMenuItem.Text = "1x1 same";
             this.x1ToolStripMenuItem.Click += new System.EventHandler(this.x1ToolStripMenuItem_Click);
             // 
             // x3ToolStripMenuItem
             // 
             this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
-            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.x3ToolStripMenuItem.Text = "3x3 same";
             this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
             // 
             // x5ToolStripMenuItem
             // 
             this.x5ToolStripMenuItem.Name = "x5ToolStripMenuItem";
-            this.x5ToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.x5ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.x5ToolStripMenuItem.Text = "5x5 same";
             this.x5ToolStripMenuItem.Click += new System.EventHandler(this.x5ToolStripMenuItem_Click);
             // 
             // x2NextToolStripMenuItem
             // 
             this.x2NextToolStripMenuItem.Name = "x2NextToolStripMenuItem";
-            this.x2NextToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.x2NextToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.x2NextToolStripMenuItem.Text = "2x2 next";
             this.x2NextToolStripMenuItem.Click += new System.EventHandler(this.x2NextToolStripMenuItem_Click);
             // 
             // cloneFromTilesetToolStripMenuItem
             // 
             this.cloneFromTilesetToolStripMenuItem.Name = "cloneFromTilesetToolStripMenuItem";
-            this.cloneFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.cloneFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.cloneFromTilesetToolStripMenuItem.Text = "Clone from Tileset";
             this.cloneFromTilesetToolStripMenuItem.Click += new System.EventHandler(this.cloneFromTilesetToolStripMenuItem_Click);
             // 
             // cloneFromMapToolStripMenuItem
             // 
             this.cloneFromMapToolStripMenuItem.Name = "cloneFromMapToolStripMenuItem";
-            this.cloneFromMapToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.cloneFromMapToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.cloneFromMapToolStripMenuItem.Text = "Clone from Map";
             this.cloneFromMapToolStripMenuItem.Click += new System.EventHandler(this.cloneFromMapToolStripMenuItem_Click);
             // 
             // fillScreenToolStripMenuItem
             // 
             this.fillScreenToolStripMenuItem.Name = "fillScreenToolStripMenuItem";
-            this.fillScreenToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.fillScreenToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.fillScreenToolStripMenuItem.Text = "Fill Screen";
             this.fillScreenToolStripMenuItem.Click += new System.EventHandler(this.fillScreenToolStripMenuItem_Click);
             // 
@@ -947,6 +947,7 @@
             this.trackBar1.Name = "trackBar1";
             this.trackBar1.Size = new System.Drawing.Size(64, 45);
             this.trackBar1.TabIndex = 43;
+            this.trackBar1.TickFrequency = 3;
             this.trackBar1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.trackBar1_MouseMove);
             this.trackBar1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trackBar1_MouseUp);
             // 
@@ -958,6 +959,7 @@
             this.trackBar2.Name = "trackBar2";
             this.trackBar2.Size = new System.Drawing.Size(64, 45);
             this.trackBar2.TabIndex = 44;
+            this.trackBar2.TickFrequency = 3;
             this.trackBar2.MouseMove += new System.Windows.Forms.MouseEventHandler(this.trackBar2_MouseMove);
             this.trackBar2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trackBar2_MouseUp);
             // 
@@ -969,6 +971,7 @@
             this.trackBar3.Name = "trackBar3";
             this.trackBar3.Size = new System.Drawing.Size(64, 45);
             this.trackBar3.TabIndex = 45;
+            this.trackBar3.TickFrequency = 3;
             this.trackBar3.MouseMove += new System.Windows.Forms.MouseEventHandler(this.trackBar3_MouseMove);
             this.trackBar3.MouseUp += new System.Windows.Forms.MouseEventHandler(this.trackBar3_MouseUp);
             // 
@@ -1022,7 +1025,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.6";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.7";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();

@@ -7,7 +7,6 @@ C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Release\M1TE2.Prop
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Release\M1TE2.csproj.GenerateResource.Cache
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Release\M1TE.exe
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Release\M1TE.pdb
-C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Release\M1TE2.csprojResolveAssemblyReference.cache
 C:\Users\dougf\source\repos\M1TE2\bin\Release\M1TE.exe.config
 C:\Users\dougf\source\repos\M1TE2\bin\Release\M1TE.exe
 C:\Users\dougf\source\repos\M1TE2\bin\Release\M1TE.pdb
@@ -18,3 +17,5 @@ C:\Users\dougf\source\repos\M1TE2\obj\Release\M1TE2.Properties.Resources.resourc
 C:\Users\dougf\source\repos\M1TE2\obj\Release\M1TE2.csproj.GenerateResource.cache
 C:\Users\dougf\source\repos\M1TE2\obj\Release\M1TE.exe
 C:\Users\dougf\source\repos\M1TE2\obj\Release\M1TE.pdb
+C:\Users\Doug\Documents\Visual Studio 2015\Projects\M1TE2\obj\Release\M1TE2.csprojAssemblyReference.cache
+C:\Users\Doug\Documents\Visual Studio 2015\Projects\M1TE2\obj\Release\M1TE2.csproj.CoreCompileInputs.cache
