@@ -1,19 +1,10 @@
-M1TE ver 1.6 (SNES Mode 1 Tile Editor) May 20, 2020
+M1TE ver 1.7 (SNES Mode 1 Tile Editor) May 20, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
 
-Permission is granted to use and copy, but not to sell this software. 
-It is free. Permission is granted to modify and reuse the code, in
-whole or in part, as long as the the original author is credited.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
-THE SOFTWARE.
+The MIT License (MIT)
 
 
 version changes
