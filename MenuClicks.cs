@@ -191,6 +191,9 @@ namespace M1TE2
 
                 update_palette();
                 common_update2();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // end of OPEN SESSION
 
@@ -419,6 +422,9 @@ namespace M1TE2
                 fs.Close();
 
                 update_tilemap();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END OF LOAD A MAP
 
@@ -491,6 +497,9 @@ namespace M1TE2
                 fs.Close();
 
                 update_tilemap();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         }
 
@@ -1065,6 +1074,9 @@ namespace M1TE2
                 fs.Close();
 
                 common_update2();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END OF LOAD 2bpp
 
@@ -1201,6 +1213,9 @@ namespace M1TE2
                 fs.Close();
 
                 common_update2();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END OF LOAD 4bpp
 
@@ -1599,6 +1614,9 @@ namespace M1TE2
                 }
 
                 fs.Close();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END OF LOAD FULL PALETTE
 
@@ -1670,6 +1688,9 @@ namespace M1TE2
                 }
 
                 fs.Close();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END LOAD 32 byte palette
 
@@ -1736,6 +1757,9 @@ namespace M1TE2
                 }
 
                 fs.Close();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
             }
         } // END PALETTE LOAD FROM RGB
 
@@ -2066,9 +2090,8 @@ namespace M1TE2
 
         // TILESET **************************************************
 
-        private void set14bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 1
-
+        public void set1_change()
+        {
             set14bppToolStripMenuItem.Checked = true;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2099,12 +2122,15 @@ namespace M1TE2
             common_update2(); // includes map
             update_palette();
         }
+        private void set14bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 1
+
+            set1_change();
+        }
 
 
-
-        private void set24bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 2
-
+        public void set2_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = true;
             set34bppToolStripMenuItem.Checked = false;
@@ -2136,11 +2162,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set24bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 2
+
+            set2_change();
+        }
 
 
-        private void set32bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 3
-
+        public void set3_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = true;
@@ -2172,11 +2202,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set32bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 3
+
+            set3_change();
+        }
 
 
-        private void set44bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 4
-
+        public void set4_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2208,11 +2242,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set44bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 4
+
+            set4_change();
+        }
 
 
-        private void set52bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 5
-
+        public void set5_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2243,11 +2281,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set52bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 5
+
+            set5_change();
+        }
 
 
-        private void set62bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 6
-
+        public void set6_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2278,11 +2320,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set62bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 6
+
+            set6_change();
+        }
 
 
-        private void set72bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 7
-
+        public void set7_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2313,11 +2359,15 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set72bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 7
+
+            set7_change();
+        }
 
 
-        private void set82bppToolStripMenuItem_Click(object sender, EventArgs e)
-        { // TILESET / SET 8
-
+        public void set8_change()
+        {
             set14bppToolStripMenuItem.Checked = false;
             set24bppToolStripMenuItem.Checked = false;
             set34bppToolStripMenuItem.Checked = false;
@@ -2348,6 +2398,12 @@ namespace M1TE2
             update_palette();
         }
 
+        private void set82bppToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILESET / SET 8
+
+            set8_change();
+        }
+
 
 
         // INFO ******************************
@@ -2355,7 +2411,7 @@ namespace M1TE2
         
         private void aboutM1TEToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nVersion 1.7");
+            MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nnesdoug.com");
         }
         
 

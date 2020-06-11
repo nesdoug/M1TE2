@@ -38,6 +38,12 @@ version changes
     - added slider bars for color
     - changed default map height to 28
 1.7 - minor fix slider bar updating
+    - fixed tilemap image zoom code that cut of 1/2
+      a pixel at the top and left, that effected exported
+      pictures also.
+    - fixed bug, double clicking in a dialogue box caused
+      a mouse event on the tilemap below it.
+    - added hotkeys to change the tileset-1,2,3,4,5,6,7,8
 
 
 Note, the RLE is a special compression format that I wrote, 
@@ -82,8 +88,10 @@ Tilesets
 Left/Right click to open an editing box.
 Numberpad 2,4,6,8 to move to adjacent tile.
 C - copy, P - paste.
+1,2,3,4,5,6,7,8 - to change the tilset.
 
 (these only work if focus is not on one of the text boxes on the form)
+
 *note - 2bpp SNES tilesets are NOT like NES. They are like Gameboy, GB,
 so, if you use YY-CHR, set the tile mode to 2bpp GB. You can easily
 convert NES to SNES in YY-CHR by loading NES, copy all the visible tiles,

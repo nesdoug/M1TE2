@@ -205,6 +205,8 @@ namespace M1TE2
 
         private void Form2_KeyDown(object sender, KeyEventArgs e)
         {
+            Form1 f = (this.Owner as Form1);
+
             if (e.KeyCode == Keys.Left)
             {
                 Tiles.shift_left();
@@ -288,6 +290,38 @@ namespace M1TE2
             {
                 Tiles.tile_fill();
                 common_update();
+            }
+            else if (e.KeyCode == Keys.D1) // number buttons
+            {
+                f.set1_change(); // change the tileset
+            }
+            else if (e.KeyCode == Keys.D2)
+            {
+                f.set2_change();
+            }
+            else if (e.KeyCode == Keys.D3)
+            {
+                f.set3_change();
+            }
+            else if (e.KeyCode == Keys.D4)
+            {
+                f.set4_change();
+            }
+            else if (e.KeyCode == Keys.D5)
+            {
+                f.set5_change();
+            }
+            else if (e.KeyCode == Keys.D6)
+            {
+                f.set6_change();
+            }
+            else if (e.KeyCode == Keys.D7)
+            {
+                f.set7_change();
+            }
+            else if (e.KeyCode == Keys.D8)
+            {
+                f.set8_change();
             }
 
         }

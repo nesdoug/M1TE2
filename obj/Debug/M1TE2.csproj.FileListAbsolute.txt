@@ -1,4 +1,3 @@
-C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Debug\M1TE2.csprojResolveAssemblyReference.cache
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Debug\M1TE2.Form1.resources
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Debug\M1TE2.Properties.Resources.resources
 C:\Users\Doug\documents\visual studio 2015\Projects\M1TE2\obj\Debug\M1TE2.csproj.GenerateResource.Cache
@@ -18,3 +17,5 @@ C:\Users\dougf\source\repos\M1TE2\obj\Debug\M1TE2.Properties.Resources.resources
 C:\Users\dougf\source\repos\M1TE2\obj\Debug\M1TE2.csproj.GenerateResource.cache
 C:\Users\dougf\source\repos\M1TE2\obj\Debug\M1TE.exe
 C:\Users\dougf\source\repos\M1TE2\obj\Debug\M1TE.pdb
+C:\Users\Doug\Documents\Visual Studio 2015\Projects\M1TE2\obj\Debug\M1TE2.csprojAssemblyReference.cache
+C:\Users\Doug\Documents\Visual Studio 2015\Projects\M1TE2\obj\Debug\M1TE2.csproj.CoreCompileInputs.cache

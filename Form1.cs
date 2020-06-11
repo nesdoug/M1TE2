@@ -51,6 +51,7 @@ namespace M1TE2
         public static byte[] rle_array = new byte[65536];
         public static int rle_index, rle_index2, rle_count;
         public static int map_clone_x, map_clone_y, clone_start_x, clone_start_y;
+        public static int disable_map_click;
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -218,6 +219,7 @@ namespace M1TE2
             using (Graphics g2 = Graphics.FromImage(temp_bmp2))
             {
                 g2.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g2.PixelOffsetMode = PixelOffsetMode.Half; // fix bug, missing half a pixel on top and left
                 g2.DrawImage(image_map_local, 0, 0, 512, 512);
             } // standard resize of bmp was blurry, this makes it sharp
 
@@ -720,6 +722,7 @@ namespace M1TE2
             using (Graphics g = Graphics.FromImage(temp_bmp))
             {
                 g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.PixelOffsetMode = PixelOffsetMode.Half; // fix bug, missing half a pixel on top and left
                 g.DrawImage(image_tiles, 0, 0, 256, 256);
             } // standard resize of bmp was blurry, this makes it sharp
 
@@ -1015,6 +1018,12 @@ namespace M1TE2
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
+            if(disable_map_click == 1)
+            {
+                disable_map_click = 0;
+                return;
+            }
+            
             if(brushsize == BRUSH_CLONE_M)
             {
                 var mouseEventArgs = e as MouseEventArgs;
@@ -1033,6 +1042,7 @@ namespace M1TE2
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         { // tilemap
+            disable_map_click = 0;
             if (map_view > 2)
             {
                 MessageBox.Show("Editing is disabled in Preview Mode.");
@@ -1175,6 +1185,7 @@ namespace M1TE2
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             if (map_view > 2) return;
+            if (disable_map_click == 1) return;
 
             if (e.Button == MouseButtons.Left)
             {
@@ -1335,6 +1346,39 @@ namespace M1TE2
                 textBox3.Text = blue.ToString();
                 trackBar3.Value = blue / 8;
                 update_box4();
+            }
+
+            else if (e.KeyCode == Keys.D1) // number buttons
+            {
+                set1_change(); // change the tileset
+            }
+            else if (e.KeyCode == Keys.D2)
+            {
+                set2_change();
+            }
+            else if (e.KeyCode == Keys.D3)
+            {
+                set3_change();
+            }
+            else if (e.KeyCode == Keys.D4)
+            {
+                set4_change();
+            }
+            else if (e.KeyCode == Keys.D5)
+            {
+                set5_change();
+            }
+            else if (e.KeyCode == Keys.D6)
+            {
+                set6_change();
+            }
+            else if (e.KeyCode == Keys.D7)
+            {
+                set7_change();
+            }
+            else if (e.KeyCode == Keys.D8)
+            {
+                set8_change();
             }
 
             common_update2();
