@@ -1,4 +1,5 @@
-M1TE ver 1.7 (SNES Mode 1 Tile Editor) May 20, 2020
+M1TE ver 1.7 (SNES Mode 1 Tile Editor) 
+June 11, 2020
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
