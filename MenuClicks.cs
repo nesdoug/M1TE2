@@ -677,7 +677,7 @@ namespace M1TE2
 
         }
 
-        private int convert_RLE(byte[] in_array, int in_size)
+        public int convert_RLE(byte[] in_array, int in_size)
         {
             byte[] in_array_P = new byte[65536];
             byte[] out_array_P = new byte[65536];

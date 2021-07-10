@@ -73,13 +73,16 @@
             this.tilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.load2bppSNESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.load4bppSNESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadToSelectedTileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.save2bppSNESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.save2bppX4ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.save4bppSNESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.save4bppX4ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveTilesInARangeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
             this.clearAllTilesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.fillTopRowWithColorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeDuplicateTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.load32BytesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -114,6 +117,10 @@
             this.cloneFromTilesetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cloneFromMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fillScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.importImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.getPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.imageToCHRToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
@@ -272,11 +279,11 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(720, 31);
+            this.label9.Location = new System.Drawing.Point(702, 31);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(19, 13);
+            this.label9.Size = new System.Drawing.Size(34, 13);
             this.label9.TabIndex = 22;
-            this.label9.Text = "00";
+            this.label9.Text = "00   0";
             // 
             // label10
             // 
@@ -524,13 +531,16 @@
             this.tilesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.load2bppSNESToolStripMenuItem,
             this.load4bppSNESToolStripMenuItem,
+            this.loadToSelectedTileToolStripMenuItem,
             this.save2bppSNESToolStripMenuItem,
             this.save2bppX4ToolStripMenuItem,
             this.save4bppSNESToolStripMenuItem,
             this.save4bppX4ToolStripMenuItem,
+            this.saveTilesInARangeToolStripMenuItem,
             this.toolStripMenuItem4,
             this.clearAllTilesToolStripMenuItem1,
-            this.fillTopRowWithColorsToolStripMenuItem});
+            this.fillTopRowWithColorsToolStripMenuItem,
+            this.removeDuplicateTilesToolStripMenuItem});
             this.tilesToolStripMenuItem.Name = "tilesToolStripMenuItem";
             this.tilesToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.tilesToolStripMenuItem.Text = "Tiles";
@@ -548,6 +558,13 @@
             this.load4bppSNESToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
             this.load4bppSNESToolStripMenuItem.Text = "Load 4bpp";
             this.load4bppSNESToolStripMenuItem.Click += new System.EventHandler(this.load4bppSNESToolStripMenuItem_Click);
+            // 
+            // loadToSelectedTileToolStripMenuItem
+            // 
+            this.loadToSelectedTileToolStripMenuItem.Name = "loadToSelectedTileToolStripMenuItem";
+            this.loadToSelectedTileToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.loadToSelectedTileToolStripMenuItem.Text = "Load to Selected Tile";
+            this.loadToSelectedTileToolStripMenuItem.Click += new System.EventHandler(this.loadToSelectedTileToolStripMenuItem_Click);
             // 
             // save2bppSNESToolStripMenuItem
             // 
@@ -577,6 +594,13 @@
             this.save4bppX4ToolStripMenuItem.Text = "Save 4bpp x 4";
             this.save4bppX4ToolStripMenuItem.Click += new System.EventHandler(this.save4bppX4ToolStripMenuItem_Click);
             // 
+            // saveTilesInARangeToolStripMenuItem
+            // 
+            this.saveTilesInARangeToolStripMenuItem.Name = "saveTilesInARangeToolStripMenuItem";
+            this.saveTilesInARangeToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.saveTilesInARangeToolStripMenuItem.Text = "Save Tiles in a Range";
+            this.saveTilesInARangeToolStripMenuItem.Click += new System.EventHandler(this.saveTilesInARangeToolStripMenuItem_Click);
+            // 
             // toolStripMenuItem4
             // 
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
@@ -597,6 +621,13 @@
             this.fillTopRowWithColorsToolStripMenuItem.Text = "Fill Top Row With Colors";
             this.fillTopRowWithColorsToolStripMenuItem.Click += new System.EventHandler(this.fillTopRowWithColorsToolStripMenuItem_Click);
             // 
+            // removeDuplicateTilesToolStripMenuItem
+            // 
+            this.removeDuplicateTilesToolStripMenuItem.Name = "removeDuplicateTilesToolStripMenuItem";
+            this.removeDuplicateTilesToolStripMenuItem.Size = new System.Drawing.Size(204, 22);
+            this.removeDuplicateTilesToolStripMenuItem.Text = "Remove Duplicate Tiles";
+            this.removeDuplicateTilesToolStripMenuItem.Click += new System.EventHandler(this.removeDuplicateTilesToolStripMenuItem_Click);
+            // 
             // paletteToolStripMenuItem
             // 
             this.paletteToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -614,49 +645,49 @@
             // loadPaletteToolStripMenuItem
             // 
             this.loadPaletteToolStripMenuItem.Name = "loadPaletteToolStripMenuItem";
-            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.loadPaletteToolStripMenuItem.Text = "Load Full Palette";
+            this.loadPaletteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.loadPaletteToolStripMenuItem.Text = "Load 128 Colors";
             this.loadPaletteToolStripMenuItem.Click += new System.EventHandler(this.loadPaletteToolStripMenuItem_Click);
             // 
             // load32BytesToolStripMenuItem
             // 
             this.load32BytesToolStripMenuItem.Name = "load32BytesToolStripMenuItem";
-            this.load32BytesToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.load32BytesToolStripMenuItem.Text = "Load 32 bytes";
+            this.load32BytesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.load32BytesToolStripMenuItem.Text = "Load 16 Colors to Row";
             this.load32BytesToolStripMenuItem.Click += new System.EventHandler(this.load32BytesToolStripMenuItem_Click);
             // 
             // loadPaletteFromRGBToolStripMenuItem
             // 
             this.loadPaletteFromRGBToolStripMenuItem.Name = "loadPaletteFromRGBToolStripMenuItem";
-            this.loadPaletteFromRGBToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.loadPaletteFromRGBToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.loadPaletteFromRGBToolStripMenuItem.Text = "Load Palette from RGB";
             this.loadPaletteFromRGBToolStripMenuItem.Click += new System.EventHandler(this.loadPaletteFromRGBToolStripMenuItem_Click);
             // 
             // savePaletteToolStripMenuItem
             // 
             this.savePaletteToolStripMenuItem.Name = "savePaletteToolStripMenuItem";
-            this.savePaletteToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.savePaletteToolStripMenuItem.Text = "Save Palette";
+            this.savePaletteToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.savePaletteToolStripMenuItem.Text = "Save 128 Colors";
             this.savePaletteToolStripMenuItem.Click += new System.EventHandler(this.savePaletteToolStripMenuItem_Click);
             // 
             // save32BytesToolStripMenuItem
             // 
             this.save32BytesToolStripMenuItem.Name = "save32BytesToolStripMenuItem";
-            this.save32BytesToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
-            this.save32BytesToolStripMenuItem.Text = "Save 32 bytes";
+            this.save32BytesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            this.save32BytesToolStripMenuItem.Text = "Save 16 Color from Row";
             this.save32BytesToolStripMenuItem.Click += new System.EventHandler(this.save32BytesToolStripMenuItem_Click);
             // 
             // savePaletteAsASMToolStripMenuItem
             // 
             this.savePaletteAsASMToolStripMenuItem.Name = "savePaletteAsASMToolStripMenuItem";
-            this.savePaletteAsASMToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.savePaletteAsASMToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.savePaletteAsASMToolStripMenuItem.Text = "Save Palette as ASM";
             this.savePaletteAsASMToolStripMenuItem.Click += new System.EventHandler(this.savePaletteAsASMToolStripMenuItem_Click);
             // 
             // savePalAsRGBToolStripMenuItem
             // 
             this.savePalAsRGBToolStripMenuItem.Name = "savePalAsRGBToolStripMenuItem";
-            this.savePalAsRGBToolStripMenuItem.Size = new System.Drawing.Size(193, 22);
+            this.savePalAsRGBToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
             this.savePalAsRGBToolStripMenuItem.Text = "Save Palette as RGB";
             this.savePalAsRGBToolStripMenuItem.Click += new System.EventHandler(this.savePalAsRGBToolStripMenuItem_Click);
             // 
@@ -794,7 +825,7 @@
             // aboutM1TEToolStripMenuItem
             // 
             this.aboutM1TEToolStripMenuItem.Name = "aboutM1TEToolStripMenuItem";
-            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.aboutM1TEToolStripMenuItem.Text = "About M1TE";
             this.aboutM1TEToolStripMenuItem.Click += new System.EventHandler(this.aboutM1TEToolStripMenuItem_Click);
             // 
@@ -808,6 +839,7 @@
             this.viewToolStripMenuItem,
             this.tilesetToolStripMenuItem,
             this.brushsizeToolStripMenuItem,
+            this.importImageToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
@@ -834,51 +866,82 @@
             this.x1ToolStripMenuItem.Checked = true;
             this.x1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x1ToolStripMenuItem.Name = "x1ToolStripMenuItem";
-            this.x1ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.x1ToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.x1ToolStripMenuItem.Text = "1x1 same";
             this.x1ToolStripMenuItem.Click += new System.EventHandler(this.x1ToolStripMenuItem_Click);
             // 
             // x3ToolStripMenuItem
             // 
             this.x3ToolStripMenuItem.Name = "x3ToolStripMenuItem";
-            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.x3ToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.x3ToolStripMenuItem.Text = "3x3 same";
             this.x3ToolStripMenuItem.Click += new System.EventHandler(this.x3ToolStripMenuItem_Click);
             // 
             // x5ToolStripMenuItem
             // 
             this.x5ToolStripMenuItem.Name = "x5ToolStripMenuItem";
-            this.x5ToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.x5ToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.x5ToolStripMenuItem.Text = "5x5 same";
             this.x5ToolStripMenuItem.Click += new System.EventHandler(this.x5ToolStripMenuItem_Click);
             // 
             // x2NextToolStripMenuItem
             // 
             this.x2NextToolStripMenuItem.Name = "x2NextToolStripMenuItem";
-            this.x2NextToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.x2NextToolStripMenuItem.Text = "2x2 next";
+            this.x2NextToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.x2NextToolStripMenuItem.Text = "2x2 next (pseudo 16x16)";
             this.x2NextToolStripMenuItem.Click += new System.EventHandler(this.x2NextToolStripMenuItem_Click);
             // 
             // cloneFromTilesetToolStripMenuItem
             // 
             this.cloneFromTilesetToolStripMenuItem.Name = "cloneFromTilesetToolStripMenuItem";
-            this.cloneFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.cloneFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.cloneFromTilesetToolStripMenuItem.Text = "Clone from Tileset";
             this.cloneFromTilesetToolStripMenuItem.Click += new System.EventHandler(this.cloneFromTilesetToolStripMenuItem_Click);
             // 
             // cloneFromMapToolStripMenuItem
             // 
             this.cloneFromMapToolStripMenuItem.Name = "cloneFromMapToolStripMenuItem";
-            this.cloneFromMapToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.cloneFromMapToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.cloneFromMapToolStripMenuItem.Text = "Clone from Map";
             this.cloneFromMapToolStripMenuItem.Click += new System.EventHandler(this.cloneFromMapToolStripMenuItem_Click);
             // 
             // fillScreenToolStripMenuItem
             // 
             this.fillScreenToolStripMenuItem.Name = "fillScreenToolStripMenuItem";
-            this.fillScreenToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.fillScreenToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.fillScreenToolStripMenuItem.Text = "Fill Screen";
             this.fillScreenToolStripMenuItem.Click += new System.EventHandler(this.fillScreenToolStripMenuItem_Click);
+            // 
+            // importImageToolStripMenuItem
+            // 
+            this.importImageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.getPaletteToolStripMenuItem,
+            this.imageToCHRToolStripMenuItem,
+            this.optionsToolStripMenuItem});
+            this.importImageToolStripMenuItem.Name = "importImageToolStripMenuItem";
+            this.importImageToolStripMenuItem.Size = new System.Drawing.Size(91, 20);
+            this.importImageToolStripMenuItem.Text = "Import Image";
+            // 
+            // getPaletteToolStripMenuItem
+            // 
+            this.getPaletteToolStripMenuItem.Name = "getPaletteToolStripMenuItem";
+            this.getPaletteToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
+            this.getPaletteToolStripMenuItem.Text = "Get Palette from Image";
+            this.getPaletteToolStripMenuItem.Click += new System.EventHandler(this.getPaletteToolStripMenuItem_Click);
+            // 
+            // imageToCHRToolStripMenuItem
+            // 
+            this.imageToCHRToolStripMenuItem.Name = "imageToCHRToolStripMenuItem";
+            this.imageToCHRToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
+            this.imageToCHRToolStripMenuItem.Text = "Get Tiles/Map from Image";
+            this.imageToCHRToolStripMenuItem.Click += new System.EventHandler(this.imageToCHRToolStripMenuItem_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(213, 22);
+            this.optionsToolStripMenuItem.Text = "Options";
+            this.optionsToolStripMenuItem.Click += new System.EventHandler(this.optionsToolStripMenuItem_Click);
             // 
             // button1
             // 
@@ -894,7 +957,7 @@
             // button2
             // 
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button2.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.button2.Location = new System.Drawing.Point(154, 27);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(20, 20);
@@ -906,7 +969,7 @@
             // button3
             // 
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.button3.Location = new System.Drawing.Point(180, 27);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(20, 20);
@@ -979,7 +1042,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(804, 641);
+            this.ClientSize = new System.Drawing.Size(804, 642);
             this.Controls.Add(this.trackBar3);
             this.Controls.Add(this.trackBar2);
             this.Controls.Add(this.trackBar1);
@@ -1025,7 +1088,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 1.7";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 2.0";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -1137,6 +1200,13 @@
         private System.Windows.Forms.TrackBar trackBar2;
         private System.Windows.Forms.TrackBar trackBar3;
         private System.Windows.Forms.ToolStripMenuItem fillScreenToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem getPaletteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem imageToCHRToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem removeDuplicateTilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem loadToSelectedTileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveTilesInARangeToolStripMenuItem;
     }
 }
 

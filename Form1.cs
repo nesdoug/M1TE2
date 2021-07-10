@@ -18,13 +18,25 @@ namespace M1TE2
         {
             InitializeComponent();
             this.Location = new Point(Screen.PrimaryScreen.Bounds.X, Screen.PrimaryScreen.Bounds.Y);
-            
+
         }
         static Form2 newChild = null;
+        static Form3 newChild3 = null;
+        static Form4 newChild4 = null;
 
         public static void close_it()
         {
             newChild = null;
+        }
+
+        public static void close_it3()
+        {
+            newChild3 = null;
+        }
+
+        public static void close_it4()
+        {
+            newChild4 = null;
         }
 
         //globals
@@ -35,6 +47,7 @@ namespace M1TE2
         public static Bitmap temp_bmp = new Bitmap(256, 256); //double size
         public static Bitmap temp_bmp2 = new Bitmap(512, 512); //double size
         public static Bitmap temp_bmp3 = new Bitmap(256, 256); //double size
+        public static Bitmap cool_bmp = new Bitmap(256, 256); //import
         public static int pal_x, pal_y, tile_x, tile_y, tile_num, tile_set;
         public static int map_view, active_map_x, active_map_y, active_map_index;
         public static int map_height = 28;
@@ -52,6 +65,74 @@ namespace M1TE2
         public static int rle_index, rle_index2, rle_count;
         public static int map_clone_x, map_clone_y, clone_start_x, clone_start_y;
         public static int disable_map_click;
+
+        public static int[] R_Array = new int[65536];
+        public static int[] G_Array = new int[65536];
+        public static int[] B_Array = new int[65536];
+        public static int[] Count_Array = new int[65536]; // count each color
+        public static int[] SixteenColorIndexes = new int[16];
+        public static int[] SixteenColorsAdded = new int[16];
+        //public static int[] SortedColorIndexes = new int[16];
+        public static int color_count; // how many total different colors
+        public static int r_val, g_val, b_val, diff_val;
+        public static int c_offset, c_offset2;
+        public static int image_width, image_height;
+        public static int[] needy_chr_array = new int[65536]; // temp store color values of imported image
+
+        public static int dither_factor = 0;
+        public static int dither_adjust = 0;
+        public static double dither_db = 0.0;
+        public static bool f3_cb1 = false, f3_cb2 = false;
+        public static bool flip_h = false, flip_v = false;
+
+        public readonly int[,] BAYER_MATRIX =
+        {
+            { 0,48,12,60,3,51,15,63 },
+            { 32,16,44,28,35,19,47,31 },
+            { 8,56,4,52,11,59,7,55 },
+            { 40,24,36,20,43,27,39,23 },
+            { 2,50,14,62,1,49,13,61 },
+            { 34,18,46,30,33,17,45,29 },
+            { 10,58,6,54,9,57,5,53 },
+            { 42,26,38,22,41,25,37,21 }
+        }; // 1/64 times this
+
+        public readonly int[] H_FLIP_TABLE =
+        {
+            7,6,5,4,3,2,1,0,
+            15,14,13,12,11,10,9,8,
+            23,22,21,20,19,18,17,16,
+            31,30,29,28,27,26,25,24,
+            39,38,37,36,35,34,33,32,
+            47,46,45,44,43,42,41,40,
+            55,54,53,52,51,50,49,48,
+            63,62,61,60,59,58,57,56
+        };
+
+        public readonly int[] V_FLIP_TABLE =
+        {
+            56,57,58,59,60,61,62,63,
+            48,49,50,51,52,53,54,55,
+            40,41,42,43,44,45,46,47,
+            32,33,34,35,36,37,38,39,
+            24,25,26,27,28,29,30,31,
+            16,17,18,19,20,21,22,23,
+            8,9,10,11,12,13,14,15,
+            0,1,2,3,4,5,6,7
+        };
+
+        public readonly int[] HV_FLIP_TABLE =
+        {
+            63,62,61,60,59,58,57,56,
+            55,54,53,52,51,50,49,48,
+            47,46,45,44,43,42,41,40,
+            39,38,37,36,35,34,33,32,
+            31,30,29,28,27,26,25,24,
+            23,22,21,20,19,18,17,16,
+            15,14,13,12,11,10,9,8,
+            7,6,5,4,3,2,1,0
+        };
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -159,10 +240,10 @@ namespace M1TE2
                 int z = map_view * 32 * 32; // offset for current map
                 for (int y = 0; y < map_height; y++)
                 {
-                    for(int x = 0; x < 32; x++)
+                    for (int x = 0; x < 32; x++)
                     {
                         offset = z + (y * 32) + x; // offset to current tile on the map
-                        
+
                         if (map_view == 2) // 2bpp
                         {
                             temp_tile = ((Maps.tile[offset] + 0x400) * 8 * 8); // base offset for tile
@@ -183,7 +264,7 @@ namespace M1TE2
             if (map_height < 32)
             {
                 Color checker_color = Color.SlateGray;
-                for (int y = map_height*8; y < 256; y++)
+                for (int y = map_height * 8; y < 256; y++)
                 {
                     for (int x = 0; x < 256; x++)
                     {
@@ -226,47 +307,42 @@ namespace M1TE2
             //draw a box around the active tile
             if (map_view < 3)
             {
-                int x2 = (active_map_x * 16) - 1;
-                if (x2 < 0) x2 = 0;
+
+
+                //draw grid here
+                if (checkBox4.Checked == true)
+                {
+                    //draw horizontal lines at each 16
+                    for (int i = 31; i < (map_height * 15); i += 32)
+                    {
+                        for (int j = 0; j < 510; j += 2)
+                        {
+                            temp_bmp2.SetPixel(j, i, Color.Black);
+                            temp_bmp2.SetPixel(j + 1, i, Color.White);
+                        }
+                    }
+                    //draw vertical lines at each 16
+                    for (int j = 31; j < 511; j += 32)
+                    {
+                        for (int i = 0; i < (map_height * 16) - 2; i += 2)
+                        {
+                            temp_bmp2.SetPixel(j, i + 1, Color.Black);
+                            temp_bmp2.SetPixel(j, i, Color.White);
+                        }
+                    }
+                }
+                // draw box around current selection
+                int x2 = (active_map_x * 16);
+                //if (x2 >= 496) x2 = 495;
                 if (active_map_y >= map_height) active_map_y = map_height - 1;
-                int y2 = (active_map_y * 16) - 1;
-                if (y2 < 0) y2 = 0;
+                int y2 = (active_map_y * 16);
+                //if (y2 >= 496) y2 = 495;
                 for (int i = 0; i < 16; i++)
                 {
                     temp_bmp2.SetPixel(x2 + i, y2, Color.White);
                     temp_bmp2.SetPixel(x2, y2 + i, Color.White);
                     temp_bmp2.SetPixel(x2 + i, y2 + 15, Color.White);
                     temp_bmp2.SetPixel(x2 + 15, y2 + i, Color.White);
-                }
-
-                //draw grid here
-                if (checkBox4.Checked == true)
-                {
-                    int addthem = Palettes.pal_r[0] + Palettes.pal_g[0] + Palettes.pal_b[0];
-                    Color grid_color = Color.White;
-                    if(addthem > 372)
-                    {
-                        grid_color = Color.Black;
-                    }
-
-                    //draw horizontal lines at each 16
-                    for (int i = 31; i < (map_height * 16); i += 32)
-                    {
-                        if (i == 511) break;
-                        for (int j = 0; j < 512; j++)
-                        {
-                            temp_bmp2.SetPixel(j, i, grid_color);
-                        }
-                    }
-                    //draw vertical lines at each 16
-                    for (int i = 0; i < (map_height * 16); i++)
-                    {
-                        for (int j = 31; j < 512; j += 32)
-                        {
-                            if (i == 511) break;
-                            temp_bmp2.SetPixel(j, i, grid_color);
-                        }
-                    }
                 }
             }
 
@@ -365,7 +441,7 @@ namespace M1TE2
         }
         // END TILEMAP SUB
 
-        
+
 
         private int check_num(string str) // make sure string is number
         {
@@ -422,7 +498,7 @@ namespace M1TE2
             if ((!is_hex(str[0])) ||
                 (!is_hex(str[1])) ||
                 (!is_hex(str[2])) ||
-                (!is_hex(str[3])) )
+                (!is_hex(str[3])))
             {
                 //something isn't a hex string
                 return "Z";
@@ -433,7 +509,7 @@ namespace M1TE2
             {
                 char[] letters = str.ToCharArray();
                 char letter;
-                switch(letters[0])
+                switch (letters[0])
                 {
                     case 'F':
                         letter = '7'; break;
@@ -463,41 +539,41 @@ namespace M1TE2
 
         private int hex_val(char chr) // convert single hex digit to int value
         {
-            switch(chr)
+            switch (chr)
             {
                 case 'F':
                     return 15;
                 case 'E':
-                    return 14; 
+                    return 14;
                 case 'D':
-                    return 13; 
+                    return 13;
                 case 'C':
-                    return 12; 
+                    return 12;
                 case 'B':
-                    return 11; 
+                    return 11;
                 case 'A':
-                    return 10; 
+                    return 10;
                 case '9':
-                    return 9; 
+                    return 9;
                 case '8':
-                    return 8; 
+                    return 8;
                 case '7':
-                    return 7; 
+                    return 7;
                 case '6':
-                    return 6; 
+                    return 6;
                 case '5':
-                    return 5; 
+                    return 5;
                 case '4':
-                    return 4; 
+                    return 4;
                 case '3':
-                    return 3; 
+                    return 3;
                 case '2':
-                    return 2; 
+                    return 2;
                 case '1':
-                    return 1; 
+                    return 1;
                 case '0':
                 default:
-                    return 0; 
+                    return 0;
             }
         }
 
@@ -600,7 +676,7 @@ namespace M1TE2
                 int[] value = new int[4];
                 int temp;
 
-                if(str.Length < 4)
+                if (str.Length < 4)
                 {
                     str = str.PadLeft(4, '0');
                 }
@@ -696,7 +772,7 @@ namespace M1TE2
                             if (Form1.map_view == 2) // 2bpp
                             {
                                 pal_index = pal_index & 0x03; //sanitize, for my sanity
-                                if(pal_index == 0)
+                                if (pal_index == 0)
                                 {
                                     color = 0; // 0th color
                                 }
@@ -730,9 +806,9 @@ namespace M1TE2
             int pos_x = 0; int pos_y = 0;
             for (int i = 0; i < 16; i++)
             {
-                pos_y = (tile_y * 16)-1; // it's doing a weird off by 1 thing
+                pos_y = (tile_y * 16) - 1; // it's doing a weird off by 1 thing
                 if (pos_y < 0) pos_y = 0; // so have to adjust by 1, and not == -1
-                pos_x = (tile_x * 16)-1;
+                pos_x = (tile_x * 16) - 1;
                 if (pos_x < 0) pos_x = 0;
                 temp_bmp.SetPixel(pos_x + i, pos_y, Color.White);
                 temp_bmp.SetPixel(pos_x, pos_y + i, Color.White);
@@ -750,7 +826,8 @@ namespace M1TE2
         public void tile_show_num() // top right, above tileset
         {
             string str = "";
-            str = hex_char(tile_y) + hex_char(tile_x);
+            int dec_num = (tile_y * 16) + tile_x;
+            str = hex_char(tile_y) + hex_char(tile_x) + "   " + dec_num.ToString();
             label9.Text = str;
         }
 
@@ -770,7 +847,7 @@ namespace M1TE2
             var mouseEventArgs = e as MouseEventArgs;
             if (mouseEventArgs != null)
             {
-                
+
                 tile_x = mouseEventArgs.X >> 4;
                 tile_y = mouseEventArgs.Y >> 4;
             }
@@ -792,7 +869,7 @@ namespace M1TE2
                 newChild = new Form2();
                 newChild.Owner = this;
                 int xx = Screen.PrimaryScreen.Bounds.Width;
-                if(this.Location.X + 970 < xx) // set new form location
+                if (this.Location.X + 970 < xx) // set new form location
                 {
                     newChild.Location = new Point(this.Location.X + 800, this.Location.Y + 80);
                 }
@@ -800,7 +877,7 @@ namespace M1TE2
                 {
                     newChild.Location = new Point(xx - 170, this.Location.Y);
                 }
-                
+
                 newChild.Show();
                 //update
             }
@@ -815,8 +892,10 @@ namespace M1TE2
         {
             // apply the tile now
             int temp_y, temp_x, start_x, loop_x, loop_y;
+            int z = map_view * 32 * 32;
+            int offset, temp_tile, temp_pal;
             int next_count = 0;
-            int[] next_tiles = new int [5]; // actually 4
+            int[] next_tiles = new int[5]; // actually 4
 
             // which tile is selected on right.
             int temp_set = tile_set & 3; //0-3
@@ -888,19 +967,19 @@ namespace M1TE2
             }
             else if ((brushsize == BRUSH_CLONE_T) || (brushsize == BRUSH_CLONE_M))
             {
-                
+
                 loop_x = 1;
                 loop_y = 1;
-                
+
                 if (brushsize == BRUSH_CLONE_T)
                 { // clone from tileset
                     // get distance in tiles 
                     temp_x = (active_map_x - clone_start_x) + tile_x;
                     if ((temp_x < 0) || (temp_x > 15)) return;
-                    
+
                     temp_y = (active_map_y - clone_start_y) + tile_y;
                     if ((temp_y < 0) || (temp_y > 15)) return;
-                    
+
                     tile_num2 = temp_x + (temp_y * 16) + (256 * temp_set); // 0-1023
 
                     start_x = temp_x = active_map_x;
@@ -915,8 +994,8 @@ namespace M1TE2
 
                     temp_y2 = (active_map_y - clone_start_y) + map_clone_y;
                     if ((temp_y2 < 0) || (temp_y2 >= map_height)) return;
-                    label5.Text = temp_x2.ToString();
-                    label10.Text = temp_y2.ToString();
+                    //label5.Text = temp_x2.ToString();
+                    //label10.Text = temp_y2.ToString();
 
                     temp_x = active_map_x;
                     temp_y = active_map_y;
@@ -929,6 +1008,72 @@ namespace M1TE2
                     Maps.h_flip[active_map_index] = Maps.h_flip[active_map_index2];
                     Maps.v_flip[active_map_index] = Maps.v_flip[active_map_index2];
                     Maps.priority[active_map_index] = Maps.priority[active_map_index2];
+
+
+
+                    // draw 1 tile, but first fill with zero color
+                    int temp_x3 = temp_x * 8;
+                    int temp_y3 = temp_y * 8;
+                    Color zero_color = Color.FromArgb(Palettes.pal_r[0], Palettes.pal_g[0], Palettes.pal_b[0]);
+
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 8; j++)
+                        {
+                            image_map_local.SetPixel(temp_x3 + j, temp_y3 + i, zero_color);
+                        }
+                    }
+
+                    // temp_x and temp_y
+                    //int z = map_view * 32 * 32; //above
+                    offset = z + (temp_y * 32) + temp_x;
+                    if (map_view == 2) // 2bpp
+                    {
+                        temp_tile = ((Maps.tile[offset] + 0x400) * 8 * 8); // base offset for tile
+                                                                           // the 2bpp uses the 5th set of 256 tiles
+                        temp_pal = (Maps.palette[offset] * 4); // beginning of this palette
+                    }
+                    else // 4bpp
+                    {
+                        temp_tile = (Maps.tile[offset] * 8 * 8); // base offset for tile
+                        temp_pal = (Maps.palette[offset] * 16); // beginning of this palette
+                    }
+                    big_sub(offset, temp_x, temp_y, temp_tile, temp_pal);
+
+                    //Bitmap temp_bmp2 = new Bitmap(512, 512); //resize double size
+                    using (Graphics g2 = Graphics.FromImage(temp_bmp2))
+                    {
+                        g2.InterpolationMode = InterpolationMode.NearestNeighbor;
+                        g2.PixelOffsetMode = PixelOffsetMode.Half; // fix bug, missing..
+                                                                   // half a pixel on  top and left
+                        g2.DrawImage(image_map_local, 0, 0, 512, 512);
+                    } // standard resize of bmp was blurry, this makes it sharp
+
+                    //draw grid here
+                    if (checkBox4.Checked == true)
+                    {
+                        //draw horizontal lines at each 16
+                        for (int i = 31; i < (map_height * 15); i += 32)
+                        {
+                            for (int j = 0; j < 510; j += 2)
+                            {
+                                temp_bmp2.SetPixel(j, i, Color.Black);
+                                temp_bmp2.SetPixel(j + 1, i, Color.White);
+                            }
+                        }
+                        //draw vertical lines at each 16
+                        for (int j = 31; j < 511; j += 32)
+                        {
+                            for (int i = 0; i < (map_height * 16) - 2; i += 2)
+                            {
+                                temp_bmp2.SetPixel(j, i + 1, Color.Black);
+                                temp_bmp2.SetPixel(j, i, Color.White);
+                            }
+                        }
+                    }
+
+                    pictureBox1.Image = temp_bmp2;
+                    pictureBox1.Refresh();
 
                     return; // must return when done.
                 }
@@ -944,6 +1089,7 @@ namespace M1TE2
 
 
 
+
             // nested loop of tile changes, per brush size.
             for (int yy = 0; yy < loop_y; yy++)
             {
@@ -954,7 +1100,7 @@ namespace M1TE2
                         (temp_y < map_height) && (temp_x < 32))
                     {
                         active_map_index = temp_x + (temp_y * 32) + (32 * 32 * map_view);
-                        
+
                         // always apply the palette
                         int temp_val = 0;
                         if (map_view == 2) // 2bpp mode
@@ -994,9 +1140,40 @@ namespace M1TE2
                             //Maps.priority[active_map_index] = 0; // not used
                         }
 
+
+                        // draw 1 tile, but first fill with zero color
+                        int temp_x2 = temp_x * 8;
+                        int temp_y2 = temp_y * 8;
+                        Color zero_color = Color.FromArgb(Palettes.pal_r[0], Palettes.pal_g[0], Palettes.pal_b[0]);
+
+                        for (int i = 0; i < 8; i++)
+                        {
+                            for (int j = 0; j < 8; j++)
+                            {
+                                image_map_local.SetPixel(temp_x2 + j, temp_y2 + i, zero_color);
+                            }
+                        }
+
+                        // temp_x and temp_y
+                        //int z = map_view * 32 * 32; //above
+                        offset = z + (temp_y * 32) + temp_x;
+                        if (map_view == 2) // 2bpp
+                        {
+                            temp_tile = ((Maps.tile[offset] + 0x400) * 8 * 8); // base offset for tile
+                            // the 2bpp uses the 5th set of 256 tiles
+                            temp_pal = (Maps.palette[offset] * 4); // beginning of this palette
+                        }
+                        else // 4bpp
+                        {
+                            temp_tile = (Maps.tile[offset] * 8 * 8); // base offset for tile
+                            temp_pal = (Maps.palette[offset] * 16); // beginning of this palette
+                        }
+                        big_sub(offset, temp_x, temp_y, temp_tile, temp_pal);
+
+
                     } // end of tile change 
 
-                    if(brushsize == BRUSHNEXT)
+                    if (brushsize == BRUSHNEXT)
                     {
                         //tile_num2++;
                         //tile_num2 &= 0x3ff;
@@ -1005,12 +1182,46 @@ namespace M1TE2
                     }
                     temp_x++;
                 }
-                
+
                 temp_x = start_x;
                 temp_y++;
             }
 
-            
+            //Bitmap temp_bmp2 = new Bitmap(512, 512); //resize double size
+            using (Graphics g2 = Graphics.FromImage(temp_bmp2))
+            {
+                g2.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g2.PixelOffsetMode = PixelOffsetMode.Half; // fix bug, missing..
+                                                           // half a pixel on  top and left
+                g2.DrawImage(image_map_local, 0, 0, 512, 512);
+            } // standard resize of bmp was blurry, this makes it sharp
+
+            //draw grid here
+            if (checkBox4.Checked == true)
+            {
+                //draw horizontal lines at each 16
+                for (int i = 31; i < (map_height * 15); i += 32)
+                {
+                    for (int j = 0; j < 510; j += 2)
+                    {
+                        temp_bmp2.SetPixel(j, i, Color.Black);
+                        temp_bmp2.SetPixel(j + 1, i, Color.White);
+                    }
+                }
+                //draw vertical lines at each 16
+                for (int j = 31; j < 511; j += 32)
+                {
+                    for (int i = 0; i < (map_height * 16) - 2; i += 2)
+                    {
+                        temp_bmp2.SetPixel(j, i + 1, Color.Black);
+                        temp_bmp2.SetPixel(j, i, Color.White);
+                    }
+                }
+            }
+
+            pictureBox1.Image = temp_bmp2;
+            pictureBox1.Refresh();
+
 
             //update_tilemap(); // moved
         }
@@ -1018,13 +1229,13 @@ namespace M1TE2
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
-            if(disable_map_click == 1)
+            if (disable_map_click == 1) // click dialog boxes were causing mouse clicks on map
             {
                 disable_map_click = 0;
                 return;
             }
-            
-            if(brushsize == BRUSH_CLONE_M)
+
+            if (brushsize == BRUSH_CLONE_M)
             {
                 var mouseEventArgs = e as MouseEventArgs;
                 if (mouseEventArgs == null) return;
@@ -1038,6 +1249,8 @@ namespace M1TE2
                     common_update2();
                 }
             }
+
+            update_tilemap(); // added 1.8
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -1048,7 +1261,7 @@ namespace M1TE2
                 MessageBox.Show("Editing is disabled in Preview Mode.");
                 return;
             }
-            
+
             active_map_x = 0; active_map_y = 0;
             var mouseEventArgs = e as MouseEventArgs;
             if (mouseEventArgs != null)
@@ -1071,12 +1284,12 @@ namespace M1TE2
             {
                 clone_start_x = active_map_x;
                 clone_start_y = active_map_y;
-                
+
 
                 last_tile_x = active_map_x; // to speed up the app
                 last_tile_y = active_map_y; // see mouse move event
                 picbox1_sub(); // place the tile and redraw the map
-                update_tilemap();
+                //update_tilemap();
             }
             else if (e.Button == MouseButtons.Right) // get the tile, tileset, and properties
             {
@@ -1177,7 +1390,7 @@ namespace M1TE2
 
         private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
         { // TILEMAP
-            
+
         } // END CLICKED ON TILEMAP
 
 
@@ -1208,22 +1421,22 @@ namespace M1TE2
                 label12.Text = "X = " + active_map_x.ToString();
                 label13.Text = "Y = " + active_map_y.ToString();
 
-                if((last_tile_x != active_map_x)||(last_tile_y != active_map_y))
+                if ((last_tile_x != active_map_x) || (last_tile_y != active_map_y))
                 {
                     // only update if the tile under mouse has changed.
                     last_tile_x = active_map_x;
                     last_tile_y = active_map_y;
                     picbox1_sub();
-                    update_tilemap();
+                    //update_tilemap();
                 }
-                
+
             }
         }
         // END MOUSE DOWN MOVE ON TILEMAP
 
 
 
-        
+
         //capure key presses on the tiles, focus is redirected to label 5
         private void label5_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
@@ -1249,13 +1462,13 @@ namespace M1TE2
                 e.IsInputKey = true;
                 Tiles.shift_down();
             }
-            
+
             else if (e.KeyCode == Keys.NumPad2)
             {
                 if (tile_y < 15) tile_y++;
                 tile_num = (tile_y * 16) + tile_x;
             }
-            else if (e.KeyCode == Keys.NumPad4) 
+            else if (e.KeyCode == Keys.NumPad4)
             {
                 if (tile_x > 0) tile_x--;
                 tile_num = (tile_y * 16) + tile_x;
@@ -1386,11 +1599,11 @@ namespace M1TE2
             label5.Focus();
         }
 
-        
 
-        
 
-        
+
+
+
 
         private void common_update2()
         {
@@ -1398,7 +1611,7 @@ namespace M1TE2
             {
                 newChild.update_tile_box();
             }
-            
+
             update_tile_image();
             update_tilemap();
         }
@@ -1445,7 +1658,7 @@ namespace M1TE2
             int save_pal = pal_x;
             tile_num = 0;
             pal_x = 0;
-            for(int a = 0; a < 16; a++)
+            for (int a = 0; a < 16; a++)
             {
                 Tiles.tile_fill();
                 tile_num++;
@@ -1528,9 +1741,1041 @@ namespace M1TE2
             label5.Focus();
         }
 
+        private void removeDuplicateTilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            RemoveDuplicateTiles();
+            common_update2();
+        }
+
+        public void RemoveDuplicateTiles()
+        {
+            // this checks each tileset 1-4 / 5-8 and removes duplicates
+            // this goes through each map and reorders the tile #
+            // also flipped versions of a tile are removed ... TODO
+
+            // first the 4bpp tilesets (1-4)
+            int tile_so_far = 1;
+            for (int tile = 1; tile < 1024; tile++) // higher val
+            {
+                // compare to all previous tiles
+                bool match_found = false;
+                int match_index = 0;
+                for (int tile2 = 0; tile2 < tile_so_far; tile2++) // lower val
+                {
+                    match_found = Compare2Tiles(tile, tile2, 0);
+                    if (match_found == true)
+                    {
+                        match_index = tile2; // the lower val, keeper
+                        break;
+                    }
+                }
+
+                if (match_found == true)
+                {
+                    DeleteTile(tile, 0);
+                    // search map1 for the bad tile, replace with good
+                    ReplaceTile(tile, match_index, 0); // bad, good, start offset
+                    // search map2
+                    ReplaceTile(tile, match_index, 1024);
+                }
+                else // no match found
+                {
+                    // shift the tile down, maybe
+                    if (tile != tile_so_far)
+                    {
+                        ReplaceTile(tile, tile_so_far, 0); // bad, good, start offset
+                        ReplaceTile(tile, tile_so_far, 1024); // search map2
+                        CopyTile(tile, tile_so_far, 0); // bad, good, start offset
+                        DeleteTile(tile, 0);
+                    }
+
+                    tile_so_far++;
+                }
+            }
+
+
+            // now test tilesets 5-8 (2bpp)
+            // first the 4bpp tilesets (1-4)
+            tile_so_far = 1;
+            for (int tile = 1; tile < 1024; tile++) // higher val
+            {
+                // compare to all previous tiles
+                bool match_found = false;
+                int match_index = 0;
+                for (int tile2 = 0; tile2 < tile_so_far; tile2++) // lower val
+                {
+                    match_found = Compare2Tiles(tile, tile2, 65536);
+                    if (match_found == true)
+                    {
+                        match_index = tile2; // the lower val, keeper
+                        break;
+                    }
+                }
+
+                if (match_found == true)
+                {
+                    DeleteTile(tile, 65536);
+                    // search map3
+                    ReplaceTile(tile, match_index, 2048);  // bad, good, start offset
+                }
+                else // no match found
+                {
+                    // shift the tile down, maybe
+                    if (tile != tile_so_far)
+                    {
+                        // search map3
+                        ReplaceTile(tile, tile_so_far, 2048);  // bad, good, start offset
+                        CopyTile(tile, tile_so_far, 65536); // bad, good, start offset
+                        DeleteTile(tile, 65536);
+                    }
+
+                    tile_so_far++;
+                }
+            }
+
+            // redraw everything (tiles and map)
+            //common_update2();
+        }
+
+        public bool Compare2Tiles(int tile, int tile2, int tileset)
+        { // tilset should be either 0 or 65536 (for 4bpp vs 2bpp tiles)
+            // also check for flipped version of the tile
+
+            int offset1 = tileset + (tile * 64);
+            int offset2 = tileset + (tile2 * 64);
+            flip_h = false;
+            flip_v = false;
+            bool same = true;
+
+            for (int i = 0; i < 64; i++)
+            { // 64 pixels per tile
+                if (Tiles.Tile_Arrays[offset1] != Tiles.Tile_Arrays[offset2])
+                {
+                    same = false;
+                    break;
+                }
+
+                offset1++;
+                offset2++;
+            }
+            if (same == true) return true;
+
+            // check H flip version
+            same = true;
+            offset1 = tileset + (tile * 64);
+            offset2 = tileset + (tile2 * 64);
+            //int offset3 = 0;
+            for (int i = 0; i < 64; i++)
+            { // 64 pixels per tile
+                if (Tiles.Tile_Arrays[offset1] != Tiles.Tile_Arrays[offset2 + H_FLIP_TABLE[i]])
+                {
+                    same = false;
+                    break;
+                }
+
+                offset1++;
+            }
+            if (same == true)
+            {
+                flip_h = true;
+                return true;
+            }
+
+            // check V flip version
+            same = true;
+            offset1 = tileset + (tile * 64);
+            offset2 = tileset + (tile2 * 64);
+            //int offset3 = 0;
+            for (int i = 0; i < 64; i++)
+            { // 64 pixels per tile
+                if (Tiles.Tile_Arrays[offset1] != Tiles.Tile_Arrays[offset2 + V_FLIP_TABLE[i]])
+                {
+                    same = false;
+                    break;
+                }
+
+                offset1++;
+            }
+            if (same == true)
+            {
+                flip_v = true;
+                return true;
+            }
+
+            // check HV flip version
+            same = true;
+            offset1 = tileset + (tile * 64);
+            offset2 = tileset + (tile2 * 64);
+            //int offset3 = 0;
+            for (int i = 0; i < 64; i++)
+            { // 64 pixels per tile
+                if (Tiles.Tile_Arrays[offset1] != Tiles.Tile_Arrays[offset2 + HV_FLIP_TABLE[i]])
+                {
+                    same = false;
+                    break;
+                }
+
+                offset1++;
+            }
+            if (same == true)
+            {
+                flip_h = true;
+                flip_v = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        public void DeleteTile(int tile, int tileset)
+        { // tilset should be either 0 or 65536 (for 4bpp vs 2bpp tiles)
+            int offset3 = tileset + (tile * 64);
+            for (int i = 0; i < 64; i++)
+            {
+                Tiles.Tile_Arrays[offset3++] = 0;
+            }
+        }
+
+
+        public void CopyTile(int tile, int tile2, int tileset) // high, low, start offset
+        { // shift the tile down 
+            // tilset should be either 0 or 65536 (for 4bpp vs 2bpp tiles)
+            int offset4 = tileset + (tile * 64);
+            int offset5 = tileset + (tile2 * 64);
+            for (int i = 0; i < 64; i++)
+            {
+                Tiles.Tile_Arrays[offset5] = Tiles.Tile_Arrays[offset4];
+                offset4++;
+                offset5++;
+            }
+        }
+
+        private void loadToSelectedTileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+            int[] bit1 = new int[8]; // bit planes
+            int[] bit2 = new int[8];
+            int[] bit3 = new int[8];
+            int[] bit4 = new int[8];
+            int temp1, temp2, temp3, temp4;
+            int[] temp_tiles = new int[0x8000];
+            int size_temp_tiles = 0;
+
+            // tile_set 0-7
+            int offset_tiles_ar = (tile_x * 64) + (tile_y * 1024) + (tile_set * 0x4000);
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Title = "Select tiles to the selected tile";
+            openFileDialog1.Filter = "Tileset (*.chr)|*.chr|All files (*.*)|*.*";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
+                if (fs.Length >= 32) // at least one tile.
+                {
+                    size_temp_tiles = (int)fs.Length & 0xfff0; // round down
+                    if (size_temp_tiles > 0x8000) size_temp_tiles = 0x8000; // max
+                    // copy file to the temp array.
+                    for (int i = 0; i < size_temp_tiles; i++)
+                    {
+                        temp_tiles[i] = (byte)fs.ReadByte();
+                    }
+
+                    int num_loops;
+                    int chr_index = 0;
+
+                    if(tile_set > 3) // 2bpp
+                    {
+                        num_loops = size_temp_tiles / 16; // 16 bytes per tile
+                        for (int i = 0; i < num_loops; i++)
+                        {
+                            // get 16 bytes per tile
+                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                            {
+                                // get the 2 bitplanes for each tile row
+                                //int y2 = y * 2; //0,2,4,6,8,10,12,14
+                                bit1[y] = temp_tiles[chr_index++];
+                                bit2[y] = temp_tiles[chr_index++];
+
+                                //int offset = offset_tiles_ar + (temp_set * 256 * 8 * 8) + (i * 8 * 8) + (y * 8);
+                                for (int x = 7; x >= 0; x--) // right to left
+                                {
+                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                    bit1[y] = bit1[y] >> 1;
+                                    temp2 = bit2[y] & 1;
+                                    bit2[y] = bit2[y] >> 1;
+                                    Tiles.Tile_Arrays[offset_tiles_ar + x] =
+                                        (temp2 << 1) + temp1;
+                                    
+                                }
+                                offset_tiles_ar += 8;
+                            }
+
+                            //don't go too far, even if more tiles to read
+                            if (offset_tiles_ar >= 131072) break; // end of the 2nd set
+                        }
+                    }
+                    else // 4bpp
+                    {
+                        
+                        num_loops = size_temp_tiles / 32; // 32 bytes per tile
+                        for (int i = 0; i < num_loops; i++)
+                        {
+                            // get 32 bytes per tile
+                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                            {
+                                // get the 4 bitplanes for each tile row
+                                //int y2 = y * 2; //0,2,4,6,8,10,12,14
+                                int y2 = y * 2; //0,2,4,6,8,10,12,14
+                                bit1[y] = temp_tiles[chr_index + y2];
+                                bit2[y] = temp_tiles[chr_index + y2 + 1];
+                                bit3[y] = temp_tiles[chr_index + y2 + 16];
+                                bit4[y] = temp_tiles[chr_index + y2 + 17];
+
+                                //int offset = offset_tiles_ar + (temp_set * 256 * 8 * 8) + (i * 8 * 8) + (y * 8);
+                                for (int x = 7; x >= 0; x--) // right to left
+                                {
+                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                    bit1[y] = bit1[y] >> 1;
+                                    temp2 = bit2[y] & 1;
+                                    bit2[y] = bit2[y] >> 1;
+                                    temp3 = bit3[y] & 1;
+                                    bit3[y] = bit3[y] >> 1;
+                                    temp4 = bit4[y] & 1;
+                                    bit4[y] = bit4[y] >> 1;
+                                    Tiles.Tile_Arrays[offset_tiles_ar + x] =
+                                        (temp4 << 3) + (temp3 << 2) + (temp2 << 1) + temp1;
+                                }
+                                offset_tiles_ar += 8;
+                            }
+                            chr_index += 32; 
+
+                            //don't go too far, even if more tiles to read
+                            if (offset_tiles_ar >= 65536) break; // end of the 1st set
+                        }
+                    }
+                     
+                }
+                else
+                {
+                    MessageBox.Show("File size error. Too small.",
+                    "File size error", MessageBoxButtons.OK);
+                }
+
+                fs.Close();
+
+                common_update2();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
+            }
+
+        }
+
+        private void saveTilesInARangeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(map_view > 2)
+            {
+                MessageBox.Show("First select BG View = 1,2, or 3.");
+                return;
+            }
+            
+            // open Form4, Options for saving a specific range of tiles
+            if (newChild4 != null)
+            {
+                newChild4.BringToFront();
+            }
+            else
+            {
+                newChild4 = new Form4();
+                newChild4.Owner = this;
+
+                newChild4.Top = this.Top + 100;
+                newChild4.Left = this.Left + 100;
+
+                newChild4.Show();
+
+            }
+        }
+
+        public void ReplaceTile(int bad_tile, int good_tile, int map_offset)
+        { // mapset should be 0, 1024, or 2048 (map1, map2, map3)
+            for (int i = 0; i < 1024; i++)
+            {
+                if(Maps.tile[map_offset] == bad_tile)
+                {
+                    Maps.tile[map_offset] = good_tile;
+                    if(flip_h == true)
+                    {
+                        Maps.h_flip[map_offset] = Maps.h_flip[map_offset] ^ 1;
+                        // bitwise XOR, 1 -> 0, 0 -> 1
+                    }
+                    if (flip_v == true)
+                    {
+                        Maps.v_flip[map_offset] = Maps.v_flip[map_offset] ^ 1;
+                        // bitwise XOR, 1 -> 0, 0 -> 1
+                    }
+
+                }
+                map_offset++;
+            }
+        }
+
         private void trackBar3_MouseUp(object sender, MouseEventArgs e)
         {
             label5.Focus();
+        }
+
+        private void getPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // generate a palette from the image
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Title = "Open Image";
+                dlg.Filter = "Image Files .png .jpg .bmp .gif)|*.png;*.jpg;*.bmp;*.gif|" + "All Files (*.*)|*.*";
+
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    Bitmap import_bmp = new Bitmap(dlg.FileName);
+
+                    if ((import_bmp.Height < 8) || (import_bmp.Width < 8))
+                    {
+                        MessageBox.Show("Error. File too small?");
+                        import_bmp.Dispose();
+                        return;
+                    }
+                    if ((import_bmp.Height > 256) || (import_bmp.Width > 256))
+                    {
+                        MessageBox.Show("Error. File too large. 256x256 max.");
+                        import_bmp.Dispose();
+                        return;
+                    }
+
+
+                    int num_col_to_find, start_offset;
+
+                    int RememberZeroR = Palettes.pal_r[0]; // if we use the zero color
+                    int RememberZeroG = Palettes.pal_g[0];
+                    int RememberZeroB = Palettes.pal_b[0];
+
+                    if (map_view == 2) // 2bpp mode
+                    {
+                        num_col_to_find = 4;
+                        start_offset = (pal_y * 16) + (pal_x & 0xfc);
+                        if (start_offset >= 32) start_offset = 0;
+                    }
+                    else
+                    {
+                        num_col_to_find = 16;
+                        start_offset = pal_y * 16;
+                    }
+                    
+
+                    image_height = import_bmp.Height;
+                    image_width = import_bmp.Width;
+                    Color temp_color;
+                    // copy the bitmap, crop but don't resize
+                    // copy pixel by pixel
+                    for (int xx = 0; xx < 256; xx++)
+                    {
+                        for (int yy = 0; yy < 256; yy++)
+                        {
+                            if ((xx < image_width) && (yy < image_height))
+                            {
+                                temp_color = import_bmp.GetPixel(xx, yy);
+                            }
+                            else
+                            {
+                                temp_color = Color.Gray;
+                            }
+                            cool_bmp.SetPixel(xx, yy, temp_color);
+                        }
+                    }
+
+
+
+                    int color_found = 0;
+                    int red = 0, blue = 0, green = 0;
+                    int temp_var, closest_cnt, added;
+
+                    // default colors
+
+                    // blank the arrays
+                    for (int i = 0; i < 65536; i++)
+                    {
+                        R_Array[i] = 0;
+                        G_Array[i] = 0;
+                        B_Array[i] = 0;
+                        Count_Array[i] = 0;
+                    }
+                    color_count = 0;
+
+                    Color tempcolor = Color.Black;
+
+                    // read all possible colors from the orig image
+                    // removing duplicates, keep track of how many
+                    for (int yy = 0; yy < image_height; yy++)
+                    {
+                        for (int xx = 0; xx < image_width; xx++)
+                        {
+                            tempcolor = cool_bmp.GetPixel(xx, yy);
+                            // speed it up, narrow the possibilities.
+                            red = tempcolor.R & 0xf8;
+                            blue = tempcolor.G & 0xf8;
+                            green = tempcolor.B & 0xf8;
+                            tempcolor = Color.FromArgb(red, blue, green);
+
+                            // compare to all other colors, add if not present
+                            if (color_count == 0)
+                            {
+                                Add_Color(tempcolor);
+                                continue;
+                            }
+
+                            color_found = 0;
+                            for (int i = 0; i < color_count; i++)
+                            {
+                                if ((tempcolor.R == R_Array[i] &&
+                                    tempcolor.G == G_Array[i] &&
+                                    tempcolor.B == B_Array[i]))
+                                { // color match found
+                                    Count_Array[i] = Count_Array[i] + 1;
+                                    color_found = 1;
+                                    break;
+                                }
+                            }
+                            // no color match found
+                            if (color_found == 0)
+                            {
+                                Add_Color(tempcolor);
+                            }
+
+                        }
+                    }
+                    //label5.Text = color_count.ToString(); // print, how many colors
+
+                    // this mid point algorithm tends avoid extremes
+                    // give extra weight to the lowest value and the highest value
+                    // first find the darkest and lightest colors
+                    int darkest = 999;
+                    int darkest_index = 0;
+                    int lightest = 0;
+                    int lightest_index = 0;
+                    for (int i = 0; i < color_count; i++)
+                    {
+                        added = R_Array[i] + G_Array[i] + B_Array[i];
+                        if (added < darkest)
+                        {
+                            darkest = added;
+                            darkest_index = i;
+                        }
+                        if (added > lightest)
+                        {
+                            lightest = added;
+                            lightest_index = i;
+                        }
+                    }
+                    // give more count to them
+                    temp_var = image_width * image_height / 8; // 8 is magic
+                    Count_Array[darkest_index] += temp_var;
+                    Count_Array[lightest_index] += temp_var;
+
+                    // then reduce to 4 colors, using a mid point merge with
+                    // the closest neighbor color
+
+                    int color_count2 = color_count;
+                    while (color_count2 > num_col_to_find)
+                    {
+                        //find the least count
+                        int least_index = 0;
+                        int least_cnt = 99999;
+                        for (int i = 0; i < color_count; i++)
+                        {
+                            if (Count_Array[i] == 0) continue;
+                            if (Count_Array[i] < least_cnt)
+                            {
+                                least_cnt = Count_Array[i];
+                                least_index = i;
+                            }
+                        }
+                        // delete itself
+                        Count_Array[least_index] = 0;
+
+                        int closest_index = 0;
+                        int closest_val = 999999;
+                        r_val = R_Array[least_index];
+                        g_val = G_Array[least_index];
+                        b_val = B_Array[least_index];
+                        int dR = 0, dG = 0, dB = 0;
+
+                        // find the closest to that one
+                        for (int i = 0; i < color_count; i++)
+                        {
+                            if (Count_Array[i] == 0) continue;
+                            dR = r_val - R_Array[i];
+                            dG = g_val - G_Array[i];
+                            dB = b_val - B_Array[i];
+                            diff_val = ((dR * dR) + (dG * dG) + (dB * dB));
+
+                            /*diff_val = Math.Abs(r_val - R_Array[i]);
+                            diff_val += Math.Abs(g_val - G_Array[i]);
+                            diff_val += Math.Abs(b_val - B_Array[i]);*/
+                            if (diff_val < closest_val)
+                            {
+                                closest_val = diff_val;
+                                closest_index = i;
+                            }
+                        }
+
+                        closest_cnt = Count_Array[closest_index];
+
+                        // merge closet index with least index, mid point
+                        temp_var = (closest_cnt + least_cnt);
+                        // the algorithm was (color1 + color2) / 2
+                        // but now, multiplied each by their count, div by both counts
+                        r_val = (R_Array[least_index] * least_cnt) + (R_Array[closest_index] * closest_cnt);
+                        r_val = (int)Math.Round((double)r_val / temp_var);
+                        g_val = (G_Array[least_index] * least_cnt) + (G_Array[closest_index] * closest_cnt);
+                        g_val = (int)Math.Round((double)g_val / temp_var);
+                        b_val = (B_Array[least_index] * least_cnt) + (B_Array[closest_index] * closest_cnt);
+                        b_val = (int)Math.Round((double)b_val / temp_var);
+                        R_Array[closest_index] = r_val;
+                        G_Array[closest_index] = g_val;
+                        B_Array[closest_index] = b_val;
+                        Count_Array[closest_index] = closest_cnt + least_cnt;
+
+                        color_count2--;
+
+                    }
+
+                    // always palette zero
+                    // zero fill the palette, before filling (black)
+                    for (int i = 0; i < num_col_to_find; i++)
+                    {
+                        int j = start_offset + i;
+                        Palettes.pal_r[j] = 0;
+                        Palettes.pal_g[j] = 0;
+                        Palettes.pal_b[j] = 0;
+                    }
+                    // then go through the array and pull out 4 numbers (or 16)
+                    int findindex = 0;
+                    int color_count3 = 0;
+                    while (color_count3 < color_count2)
+                    {
+                        if(Count_Array[findindex] != 0)
+                        {
+                            SixteenColorIndexes[color_count3] = findindex;
+                            color_count3++;
+                        }
+
+                        findindex++;
+                        if (findindex >= 65536) break;
+
+                    }
+
+                    // then sort by darkness
+                    for(int i = 0; i < 16; i++) // zero them
+                    {
+                        SixteenColorsAdded[i] = 0;
+                    }
+                    for (int i = 0; i < color_count2; i++) // add them up (rough brightness)
+                    {
+                        SixteenColorsAdded[i] += R_Array[SixteenColorIndexes[i]];
+                        SixteenColorsAdded[i] += G_Array[SixteenColorIndexes[i]];
+                        SixteenColorsAdded[i] += B_Array[SixteenColorIndexes[i]];
+                    }
+                    int temp_val;
+                    while (true)
+                    {
+                        bool sorted = true;
+                        for (int i = 0; i < color_count2-1; i++) // add them up (rough brightness)
+                        {
+                            if(SixteenColorsAdded[i] > SixteenColorsAdded[i+1])
+                            {
+                                sorted = false;
+                                // swap them
+                                temp_val = SixteenColorsAdded[i];
+                                SixteenColorsAdded[i] = SixteenColorsAdded[i + 1];
+                                SixteenColorsAdded[i + 1] = temp_val;
+                                temp_val = SixteenColorIndexes[i];
+                                SixteenColorIndexes[i] = SixteenColorIndexes[i + 1];
+                                SixteenColorIndexes[i + 1] = temp_val;
+                            }
+                        }
+                        if (sorted == true) break;
+                    }
+                    
+
+                    // then fill the palette with the colors
+                    for (int i = 0; i < color_count2; i++)
+                    {
+                        int j = start_offset + i;
+                        Palettes.pal_r[j] = (byte)(R_Array[SixteenColorIndexes[i]] & 0xf8);
+                        Palettes.pal_g[j] = (byte)(G_Array[SixteenColorIndexes[i]] & 0xf8);
+                        Palettes.pal_b[j] = (byte)(B_Array[SixteenColorIndexes[i]] & 0xf8);
+                    }
+
+
+
+                    // if checkbox to use the old zero color, put it in now
+                    // review this. could be buggy. TODO
+                    if(f3_cb1 == true)
+                    {
+                        tempcolor = Color.FromArgb(RememberZeroR, RememberZeroG, RememberZeroB);
+                        int remove_index = Best_Color(tempcolor, num_col_to_find, start_offset);
+                        // we have 1 too many color, remove the one closest to the zero color
+                        // from before... shuffle the lower colors upward 1 slot
+                        for(int i = remove_index; i > 0; i--)
+                        { 
+                            int j = start_offset + i;
+                            Palettes.pal_r[j] = Palettes.pal_r[j - 1];
+                            Palettes.pal_g[j] = Palettes.pal_g[j - 1];
+                            Palettes.pal_b[j] = Palettes.pal_b[j - 1];
+                        }
+
+                        // insert the zero color at the zero offset
+                        Palettes.pal_r[start_offset] = (byte)RememberZeroR;
+                        Palettes.pal_g[start_offset] = (byte)RememberZeroG;
+                        Palettes.pal_b[start_offset] = (byte)RememberZeroB;
+                    }
+                    
+
+                    // copy the 0th color to zero
+                    Palettes.pal_r[0] = Palettes.pal_r[start_offset];
+                    Palettes.pal_g[0] = Palettes.pal_g[start_offset];
+                    Palettes.pal_b[0] = Palettes.pal_b[start_offset];
+                    // then update the palette image
+                    update_palette();
+
+                    //update the boxes
+                    int selection = pal_x + (pal_y * 16);
+                    red = Palettes.pal_r[selection];
+                    textBox1.Text = red.ToString();
+                    trackBar1.Value = red / 8;
+
+                    green = Palettes.pal_g[selection];
+                    textBox2.Text = green.ToString();
+                    trackBar2.Value = green / 8;
+
+                    blue = Palettes.pal_b[selection];
+                    textBox3.Text = blue.ToString();
+                    trackBar3.Value = blue / 8;
+                    update_box4();
+
+                    common_update2();
+                    import_bmp.Dispose();
+                }
+            }
+        }
+
+        public void Add_Color(Color tempcolor)
+        {
+            R_Array[color_count] = tempcolor.R;
+            G_Array[color_count] = tempcolor.G;
+            B_Array[color_count] = tempcolor.B;
+            Count_Array[color_count] = 1;
+
+            color_count++;
+        }
+
+        private void imageToCHRToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // import an image, generate CHR based on existing palette
+            // also fill current map with it.
+            if (map_view > 2)
+            {
+                MessageBox.Show("Select BG View 1,2, or 3.");
+                return;
+            }
+            
+            // load image, generate CHR from it
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Title = "Open Image";
+                dlg.Filter = "Image Files .png .jpg .bmp .gif)|*.png;*.jpg;*.bmp;*.gif|" + "All Files (*.*)|*.*";
+
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    Bitmap import_bmp = new Bitmap(dlg.FileName);
+
+                    if ((import_bmp.Height < 8) || (import_bmp.Width < 8))
+                    {
+                        MessageBox.Show("Error. File too small?");
+                        import_bmp.Dispose();
+                        return;
+                    }
+                    if ((import_bmp.Height > 256) || (import_bmp.Width > 256))
+                    {
+                        MessageBox.Show("Error. File too large. 256x256 max.");
+                        import_bmp.Dispose();
+                        return;
+                    }
+
+                    int num_col, start_offset;
+
+                    if (map_view == 2) // 2bpp mode
+                    {
+                        num_col = 4;
+                        start_offset = (pal_y * 16) + (pal_x & 0xfc);
+                        if (start_offset >= 32) start_offset = 0;
+                    }
+                    else
+                    {
+                        num_col = 16;
+                        start_offset = pal_y * 16;
+                    }
+
+                    // make sure color zero is correct
+                    Palettes.pal_r[start_offset] = Palettes.pal_r[0];
+                    Palettes.pal_g[start_offset] = Palettes.pal_g[0];
+                    Palettes.pal_b[start_offset] = Palettes.pal_b[0];
+
+                    image_height = import_bmp.Height;
+                    image_width = import_bmp.Width;
+
+                    Color temp_color;
+                    // copy the bitmap, crop but don't resize
+                    // copy pixel by pixel
+                    for (int xx = 0; xx < 256; xx++)
+                    {
+                        for (int yy = 0; yy < 256; yy++)
+                        {
+                            if ((xx < image_width) && (yy < image_height))
+                            {
+                                temp_color = import_bmp.GetPixel(xx, yy);
+                            }
+                            else
+                            {
+                                temp_color = Color.Gray;
+                            }
+                            cool_bmp.SetPixel(xx, yy, temp_color);
+                        }
+                    }
+                    
+
+                    int final_y, final_x, best_index, chr_index, tile_num, pixel_num;
+                    //int temp_set = 0;
+                    int count = 0;
+
+                    // get best color for each pixel
+                    // copied to int array, needy_chr_array
+
+                    if(map_view == 2) // 2bpp mode
+                    {
+                        dither_db = dither_factor / 10.0;
+                    }
+                    else // 4bpp mode
+                    {
+                        dither_db = dither_factor / 28.0;
+                    }
+                    
+                    dither_adjust = (int)(dither_db * 32.0);
+                    int red, green, blue, bayer_val;
+
+                    for (int y = 0; y < 256; y++)
+                    {
+                        for (int x = 0; x < 256; x++)
+                        {
+                            if((x >= image_width) || (y >= image_height))
+                            {
+                                needy_chr_array[count] = 0;
+                            }
+                            else
+                            {
+                                // get the pixel and find its best color
+                                temp_color = cool_bmp.GetPixel(x, y);
+
+                                if(dither_factor != 0)
+                                {
+                                    // add dithering
+                                    red = temp_color.R - dither_adjust; // keep it from lightening
+                                    green = temp_color.G - dither_adjust;
+                                    blue = temp_color.B - dither_adjust;
+                                    bayer_val = BAYER_MATRIX[x % 8, y % 8];
+                                    bayer_val = (int)((double)bayer_val * dither_db);
+                                    red += bayer_val;
+                                    red = Math.Max(0, red); // clamp min max
+                                    red = Math.Min(255, red);
+                                    green += bayer_val;
+                                    green = Math.Max(0, green);
+                                    green = Math.Min(255, green);
+                                    blue += bayer_val;
+                                    blue = Math.Max(0, blue);
+                                    blue = Math.Min(255, blue);
+                                    temp_color = Color.FromArgb(red, green, blue);
+                                }
+
+                                best_index = Best_Color(temp_color, num_col, start_offset);
+                                needy_chr_array[count] = best_index;
+                            }
+                            
+                            count++;
+                        }
+                    }
+
+                    // copy image to CHR
+                    // do in 128x128 segments so it looks pretty
+                    // working through each tile, one at a time
+                    // this is a bit of a mess. ugh.
+                    // the tile system goes tile by tile, y*8 + x
+                    tile_num = 0;
+                    int tile_offset = 0;
+                    if(map_view == 2)
+                    {
+                        tile_offset = 65536; // start of tileset 5
+                    }
+
+                    for (int segment_y = 0; segment_y < 256; segment_y += 128)
+                    {
+                        for (int segment_x = 0; segment_x < 256; segment_x += 128)
+                        {
+                            for (int y1 = 0; y1 < 128; y1 += 8) // 16 tiles of 8x8
+                            {
+                                for (int x1 = 0; x1 < 128; x1 += 8) // ditto
+                                {
+                                    for (int y2 = 0; y2 < 8; y2++) // 8 pixels tall
+                                    {
+                                        for (int x2 = 0; x2 < 8; x2++) // 8 pixels wide
+                                        {
+                                            final_x = segment_x + x1 + x2;
+                                            final_y = segment_y + y1 + y2;
+                                            //tile_num = (y1 * 8) + x1;
+                                            pixel_num = (final_y * 256) + final_x;
+                                            // 64 bytes per tile
+                                            //chr_index = (temp_set * 256 * 64) + (tile_num * 64) + (y2 * 8) + x2;
+                                            chr_index = (tile_num * 64) + (y2 * 8) + x2;
+                                            // maybe this could be replaced with
+                                            chr_index += tile_offset;
+
+                                            Tiles.Tile_Arrays[chr_index] = needy_chr_array[pixel_num];
+                                        }
+                                    }
+                                    tile_num++;
+                                }
+                            }
+
+                            //temp_set++;
+                        }
+                    }
+                    
+                    // fill the map with the palette # and the CHR values
+                    // do we want layer 1,2, or 3 ?
+
+                    int pal_sel = 0;
+                    int map_offset = map_view * 1024;
+                    if(map_view == 2) // 2bpp mode
+                    {
+                        pal_sel = (pal_y * 4) + (pal_x >> 2);
+                    }
+                    else // 4 bpp
+                    {
+                        pal_sel = pal_y;
+                    }
+                    
+                    for(int i = 0; i < 1024; i++) // fill with palette #
+                    {
+                        Maps.palette[i + map_offset] = pal_sel;
+                        Maps.h_flip[i + map_offset] = 0;
+                        Maps.v_flip[i + map_offset] = 0;
+                        Maps.priority[i + map_offset] = 0;
+                    }
+                    // each 128x128 block separately
+                    tile_num = 0;
+                    int map_offset2 = 0;
+                    for (int y = 0; y < 16; y++)
+                    {
+                        for(int x = 0; x < 16; x++)
+                        {
+                            map_offset2 = (y * 32) + x + map_offset;
+                            Maps.tile[map_offset2] = tile_num++;
+                        }
+                    }
+                    for (int y = 0; y < 16; y++)
+                    {
+                        for (int x = 16; x < 32; x++)
+                        {
+                            map_offset2 = (y * 32) + x + map_offset;
+                            Maps.tile[map_offset2] = tile_num++;
+                        }
+                    }
+                    for (int y = 16; y < 32; y++)
+                    {
+                        for (int x = 0; x < 16; x++)
+                        {
+                            map_offset2 = (y * 32) + x + map_offset;
+                            Maps.tile[map_offset2] = tile_num++;
+                        }
+                    }
+                    for (int y = 16; y < 32; y++)
+                    {
+                        for (int x = 16; x < 32; x++)
+                        {
+                            map_offset2 = (y * 32) + x + map_offset;
+                            Maps.tile[map_offset2] = tile_num++;
+                        }
+                    }
+
+                    // change map height and box
+                    map_height = 32; //1-32
+                    textBox6.Text = "32";
+
+                    // remove duplicates
+                    if(f3_cb2 == true)
+                    {
+                        RemoveDuplicateTiles();
+                    }
+
+                    // redraw everything
+                    common_update2();
+
+                    import_bmp.Dispose();
+                }
+            }
+        }
+
+        public int Best_Color(Color temp_color, int num_col, int start_offset)
+        {
+            int best_index = 0;
+            int best_count = 99999;
+
+            for(int i = 0; i < num_col; i++)
+            {
+                int i2 = start_offset + i;
+                int red = Palettes.pal_r[i2] - temp_color.R;
+                red = Math.Abs(red);
+                int green = Palettes.pal_g[i2] - temp_color.G;
+                green = Math.Abs(green);
+                int blue = Palettes.pal_b[i2] - temp_color.B;
+                blue = Math.Abs(blue);
+                int sum = red + green + blue;
+                if(sum < best_count)
+                {
+                    best_count = sum;
+                    best_index = i;
+                }
+            }
+
+            return best_index;
+        }
+
+        private void optionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // open Form3, Options for importing images
+            if (newChild3 != null)
+            {
+                newChild3.BringToFront();
+            }
+            else
+            {
+                newChild3 = new Form3();
+                newChild3.Owner = this;
+                
+                newChild3.Top = this.Top + 100;
+                newChild3.Left = this.Left + 300;
+
+                newChild3.Show();
+                
+            }
         }
 
         private void x2NextToolStripMenuItem_Click(object sender, EventArgs e)

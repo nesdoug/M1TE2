@@ -1,5 +1,5 @@
 M1TE ver 1.7 (SNES Mode 1 Tile Editor) 
-June 11, 2020
+July 9, 2021
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -45,6 +45,14 @@ version changes
     - fixed bug, double clicking in a dialogue box caused
       a mouse event on the tilemap below it.
     - added hotkeys to change the tileset-1,2,3,4,5,6,7,8
+2.0 - import image chr/map and import palette from image
+    - much faster drawing tiles on map
+    - changed the grid lines
+	- remove duplicate tiles
+	- load tiles to selected tile (to join multiple chr files)
+	- save tiles in a range (to split into smaller files)
+	- minor renaming of menu items
+
 
 
 Note, the RLE is a special compression format that I wrote, 
@@ -170,8 +178,8 @@ Menu
 All the menu options should be self-explanatory. Some of them won't work if
 you are in the wrong mode. The message box should explain the problem.
 
-Loading just 32 bytes palette loads to the currently selected palette row.
-Same with saving 32 bytes. It saves the currently selected palette row.
+Loading a 16 color palette loads to the currently selected palette row.
+Same with saving 16 color. It saves the currently selected palette row.
 
 Saving Maps only saves the currently selected map. Loading maps only loads to
 the currently selected map.
@@ -181,6 +189,31 @@ depth needs to match, so consider marking each tileset with a 2 or 4 to
 keep them separated.
 
 File/Export Image saves the current view on the Tilemap as .png .bmp or .jpg
+
+Tiles/Remove Duplicate Tiles - will look within the same bit depth for 
+duplicates (including flipped versions of the same tile), and remove them. 
+It will also scan the maps and renumber them to match the new tilesets.
+
+Tiles/Load to Selected Tile - first select a tile in the tileset. Then click
+this to load a CHR file at the selected point. You can combine CHR files
+this way, or use it as a paste option.
+
+Tiles/Save Tiles in a Range - if you only want to save a portion of a tileset,
+or maybe 1 1/2 of a tileset. Also, can use like a copy/paste with the above.
+
+Import an image
+---------------
+.png .jpg .bmp .gif - files need to be 256x256 or smaller
+This will be a 3 step process. First, select options and set a dither level.
+Then, get the palette from the image (or make your own palette).
+Finally, get the tiles/map from the image.
+-CAUTION, it will erase the entire tileset and the current map
+-if a file has an indexed palette, it will not read it... it always
+auto-generates an optimized palette
+-if you have BG View 1 or 2, it will generate a 4bpp tileset and 16 colors
+-if you have BG View 3, it will generate a 2bpp tileset and 4 colors
+-the dithering is with brightness, and is not very good with hue shifts
+-dithered graphics don't compress very well
 
 
 
