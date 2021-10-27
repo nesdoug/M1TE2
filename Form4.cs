@@ -156,7 +156,7 @@ namespace M1TE2
             // now save it
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.Filter = "Tileset (*.chr)|*.chr|RLE File (*.rle)|*.rle";
-            saveFileDialog1.Title = "Save all 4bpp Tilesets";
+            saveFileDialog1.Title = "Save Tiles in a Range";
             //saveFileDialog1.ShowDialog();
 
             Form1 f = (this.Owner as Form1);

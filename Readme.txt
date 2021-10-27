@@ -1,11 +1,18 @@
-M1TE ver 2.0 (SNES Mode 1 Tile Editor) 
-July 9, 2021
+M1TE ver 3.1 (SNES Mode 1 Tile Editor) 
+Oct 27, 2021
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
 
 
 The MIT License (MIT)
+
+
+This app is for generating, editing, and arranging 
+SNES tiles and tilemaps (and palettes).
+It is designed for Mode 1, but could be used for any
+mode that needs 2bpp or 4bpp graphics.
+
 
 
 version changes
@@ -39,7 +46,7 @@ version changes
     - added slider bars for color
     - changed default map height to 28
 1.7 - minor fix slider bar updating
-    - fixed tilemap image zoom code that cut of 1/2
+    - fixed tilemap image zoom code that cut off 1/2
       a pixel at the top and left, that effected exported
       pictures also.
     - fixed bug, double clicking in a dialogue box caused
@@ -48,16 +55,62 @@ version changes
 2.0 - import image chr/map and import palette from image
     - much faster drawing tiles on map
     - changed the grid lines
-	- remove duplicate tiles
-	- load tiles to selected tile (to join multiple chr files)
-	- save tiles in a range (to split into smaller files)
-	- minor renaming of menu items
-
+    - remove duplicate tiles
+    - load tiles to selected tile (to join multiple chr files)
+    - save tiles in a range (to split into smaller files)
+    - minor renaming of menu items
+2.1 - fix, rt click on tile editor wasn't updating 
+      palette values
+    - top right tile # now displays 256*tileset+tile
+      so that "save tiles in range" is easier to do
+3.0 - basic undo function (press Z)
+      16x16 tilesize option
+3.1 - minor changes and bug fixes for 16x16 mode
 
 
 Note, the RLE is a special compression format that I wrote, 
 specifically for SNES maps (but could be used for tiles).
 See unrle.txt (or my SNES projects) for decompression code.
+
+
+Undo
+----
+Edit/Undo or press Z
+Note: only will undo changes to map or tiles. Palette
+changes won't undo. Some other things (checkbox status,
+which map view, which tile view, etc) may not undo.
+
+
+16x16 Tile Mode
+---------------
+In order to minimize the changes to the UI, this mode
+will appear zoomed out compared to 8x8 mode. Also, one
+of the brushes won't work right (the 2x2 pseudo 16x16) 
+so it has been disabled in this mode.
+"Remove unused tile" will work differently than 8x8 mode.
+Clone from tiles will skip odd # indexes.
+*this mode affects all layers. There is no way to mix
+and match here, even though you can do that on the SNES.
+If you need that, you will have to create 2 projects. One
+at 8x8 and one at 16x16.
+(some other features)
+-Tilesize/Force Maps to Even Values-- is not persistent,
+like you might expect, but it changes all the current
+map values to even X and Y values, since you probably
+have your 16x16 tiles aligned to the even values.
+-Tilesize/Zoom Into Quadrant-- in 16x16 mode, since the
+map is zoomed out from what you expect, this option
+will give a quick zoomed in view, to the selected map
+quadrant. Please, rt click on the map to exit this mode
+before doing anything else, which will be
+buggy (or broken) with maps stuck in Zoomed In Mode.
+
+In order for 16x16 tiles to work correctly on the SNES,
+make sure you select that when writing BGMODE ($2105).
+Maps will be twice as large in this mode, allowing
+further scrolling before reaching the end of the map.
+
+
 
 
 
@@ -97,9 +150,7 @@ Tilesets
 Left/Right click to open an editing box.
 Numberpad 2,4,6,8 to move to adjacent tile.
 C - copy, P - paste.
-1,2,3,4,5,6,7,8 - to change the tilset.
-
-(these only work if focus is not on one of the text boxes on the form)
+1,2,3,4,5,6,7,8 - to change the tileset.
 
 *note - 2bpp SNES tilesets are NOT like NES. They are like Gameboy, GB,
 so, if you use YY-CHR, set the tile mode to 2bpp GB. You can easily
@@ -188,7 +239,7 @@ Loading/Saving 1 tileset will load/save the currently selected set. The bit
 depth needs to match, so consider marking each tileset with a 2 or 4 to
 keep them separated.
 
-File/Export Image saves the current view on the Tilemap as .png .bmp or .jpg
+File/Export Image saves the current view on the Tilemap as .png .bmp .gif or .jpg
 
 Tiles/Remove Duplicate Tiles - will look within the same bit depth for 
 duplicates (including flipped versions of the same tile), and remove them. 
@@ -200,6 +251,23 @@ this way, or use it as a paste option.
 
 Tiles/Save Tiles in a Range - if you only want to save a portion of a tileset,
 or maybe 1 1/2 of a tileset. Also, can use like a copy/paste with the above.
+
+Maps/Load to Selected Y - first select a location in the
+tile map, then this will load a map starting at that row
+
+Maps/Load to Selected Y, Offset to Selected Tile - First
+select a tile map location, then select a tile in the set,
+then choose this to load a map at the specific map row,
+and it will also change the tile numbers in the map you
+are loading to start at the selected tile. Why? Let's say
+you are working on one project, which has a tileset and
+map saved, and you want to import those into another
+project, so you load the tileset below the current tileset,
+and now the corresponding map has the tile numbers wrong.
+This would adjust the tile numbers on the imported map,
+for the now relocated tiles.
+
+
 
 Import an image
 ---------------
@@ -226,7 +294,8 @@ Native .M1 file format details...
  1 byte = # of 4bpp tilesets (should be 4)
  1 byte = # of 2bpp tilesets (should be 4)
  1 byte = map height
- pad 8 zeros
+ 1 byte = tilesize (0 or 1)
+ pad 7 zeros
 256 bytes per palette (should be 256 total)
 2048 bytes per tile map (x3 should be 6144 total)
 8192 bytes per 4bpp tile set (x4 should be 32768 total)
@@ -238,7 +307,12 @@ Native .M1 file format details...
 
 ///////////////////////////////////////////////
 TODO-
--16x16 view mode
+-tile edit box could be 16x16 in 16x16 mode.
+ (then the copy, paste, flip, etc functions
+ would work for a 16x16 block)
+-the "force maps to even values" function
+ might need to be changed to be persistent
+ (not sure what I want to do here) 
 ///////////////////////////////////////////////
 
 

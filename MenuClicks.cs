@@ -38,6 +38,8 @@ namespace M1TE2
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                undo_ready = false;
+                
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
                 if (fs.Length == 55568)
                 {
@@ -55,6 +57,20 @@ namespace M1TE2
                             map_height = 32;
                         }
                         textBox6.Text = map_height.ToString();
+
+                        tilesize = big_array[8];
+                        if(tilesize == TILE_8X8)
+                        { // 8x8 tiles
+                            x8TilesToolStripMenuItem.Checked = true;
+                            x16TilesToolStripMenuItem.Checked = false;
+                            label8.Text = "8x8";
+                        }
+                        else
+                        { // 16x16 tiles
+                            x8TilesToolStripMenuItem.Checked = false;
+                            x16TilesToolStripMenuItem.Checked = true;
+                            label8.Text = "16x16";
+                        }
 
                         //copy the palette
                         int offset = 16;
@@ -74,19 +90,7 @@ namespace M1TE2
                         }
 
                         // update the numbers in the boxes
-                        temp = pal_x + (pal_y * 16);
-                        int red = Palettes.pal_r[temp];
-                        textBox1.Text = red.ToString();
-                        trackBar1.Value = red / 8;
-
-                        int green = Palettes.pal_g[temp];
-                        textBox2.Text = green.ToString();
-                        trackBar2.Value = green / 8;
-
-                        int blue = Palettes.pal_b[temp];
-                        textBox3.Text = blue.ToString();
-                        trackBar3.Value = blue / 8;
-                        update_box4();
+                        rebuild_pal_boxes();
 
                         //copy the tile maps
                         for (int i = 0; i < 32 * 32 * 3; i++)
@@ -115,7 +119,7 @@ namespace M1TE2
                                 for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
                                 {
                                     // get the 4 bitplanes for each tile row
-                                    int y2 = y * 2; //0,2,4,6,8,10,12,14
+                                    int y2 = y * 2; 
                                     bit1[y] = big_array[index + y2];
                                     bit2[y] = big_array[index + y2 + 1];
                                     bit3[y] = big_array[index + y2 + 16];
@@ -148,7 +152,7 @@ namespace M1TE2
                                 for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
                                 {
                                     // get the 4 bitplanes for each tile row
-                                    int y2 = y * 2; //0,2,4,6,8,10,12,14
+                                    int y2 = y * 2;
                                     bit1[y] = big_array[index + y2];
                                     bit2[y] = big_array[index + y2 + 1];
 
@@ -217,9 +221,11 @@ namespace M1TE2
             big_array[5] = 4; // # 4bpp tilesets
             big_array[6] = 4; // # 2bpp tilesets
             big_array[7] = (byte)map_height; // save map height
+            big_array[8] = (byte)tilesize; // save map height
+
             // I don't use these values currently, but maybe will later.
 
-            for (int i = 8; i < 16; i++)
+            for (int i = 9; i < 16; i++)
             {
                 big_array[i] = 0;
             }
@@ -319,7 +325,7 @@ namespace M1TE2
             // export image pic of the current view
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "PNG|*.png|BMP|*.bmp|JPG|*.jpg|GIF|*.gif";
-            //ImageFormatConverter format = ImageFormatConverter.StandardValuesCollection;
+            
             if (sfd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 string ext = System.IO.Path.GetExtension(sfd.FileName);
@@ -373,6 +379,8 @@ namespace M1TE2
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                Checkpoint();
+                
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
 
                 if (fs.Length < 2)
@@ -446,6 +454,8 @@ namespace M1TE2
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                Checkpoint();
+
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
 
                 if (fs.Length < 2)
@@ -475,6 +485,87 @@ namespace M1TE2
                             byte weird_byte = map_array[i + 1];
                             int tile = map_array[i] + ((weird_byte & 3) << 8);
                             Maps.tile[offset] = tile;
+                            int pal = (weird_byte >> 2) & 7;
+                            Maps.palette[offset] = pal;
+                            int pri = (weird_byte >> 5) & 1;
+                            Maps.priority[offset] = pri;
+                            int h_flip = (weird_byte >> 6) & 1;
+                            Maps.h_flip[offset] = h_flip;
+                            int v_flip = (weird_byte >> 7) & 1;
+                            Maps.v_flip[offset] = v_flip;
+                            offset++;
+                            if (offset >= too_far) break;
+                        }
+
+                        // assume that all the priority bits are the same.
+                        offset = (map_view * 32 * 32) + (32 * active_map_y);
+                        if (Maps.priority[offset] == 0) checkBox3.Checked = false;
+                        else checkBox3.Checked = true;
+                    }
+                }
+
+                fs.Close();
+
+                update_tilemap();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
+            }
+        }
+
+
+        private void ldMapSelYAtSelTileOffsetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // load a map to a selected y position, offset the tiles to the selected tile
+            if (map_view > 2)
+            {
+                MessageBox.Show("Select View: BG1, BG2, or BG3.");
+                return;
+            }
+
+            byte[] map_array = new byte[2 * 32 * 32]; // 128 entries * 2 bytes, little endian
+            int map_size;
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Title = "Select a Tile Map";
+            openFileDialog1.Filter = "Tile Map (*.map)|*.map|All files (*.*)|*.*";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Checkpoint();
+
+                System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
+
+                if (fs.Length < 2)
+                {
+                    MessageBox.Show("File size error. Expected 2 - 2048 bytes.",
+                    "File size error", MessageBoxButtons.OK);
+                }
+                else
+                {
+                    tile_num = (tile_y * 16) + tile_x;
+                    int tile_offset = tile_num + ((tile_set & 3) * 256);
+                    
+                    map_size = (int)fs.Length; // how many bytes we need to copy
+                    if (fs.Length > 0x800) map_size = 0x800;
+                    map_size = map_size & 0xfffe; // should be even
+
+                    {
+                        for (int i = 0; i < map_size; i++)
+                        {
+                            map_array[i] = (byte)fs.ReadByte();
+                        }
+
+                        int offset = (map_view * 32 * 32) + (32 * active_map_y);
+                        int too_far = ((map_view + 1) * 32 * 32);
+
+                        //copy it here
+                        for (int i = 0; i < map_size; i += 2)
+                        {
+                            byte weird_byte = map_array[i + 1];
+                            int tile = map_array[i] + ((weird_byte & 3) << 8);
+                            Maps.tile[offset] = (tile + tile_offset) & 0x3ff; 
+                              // add the tile offset, can't be higher than 1023 (3ff)
                             int pal = (weird_byte >> 2) & 7;
                             Maps.palette[offset] = pal;
                             int pri = (weird_byte >> 5) & 1;
@@ -854,7 +945,7 @@ namespace M1TE2
 
 
 
-        private void saveAMap224ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void saveAMap32xHtToolStripMenuItem_Click(object sender, EventArgs e)
         { // MAPS / SAVE 32 x HEIGHT MAP
             
             // save a map at a specific height
@@ -931,6 +1022,7 @@ namespace M1TE2
 
         private void clearAllMapsToolStripMenuItem_Click(object sender, EventArgs e)
         { // MAPS / CLEAR ALL MAPS
+            Checkpoint();
 
             for (int i = 0; i < 3 * 32 * 32; i++)
             {
@@ -963,11 +1055,12 @@ namespace M1TE2
             int temp2 = 0;
             int[] temp_tiles = new int[0x4000];
             int size_temp_tiles = 0;
-            
+
             // tile_set assumed to be 4-7
             // so offset_tiles_ar = 10000, 14000, 18000, or 1c000
+            
             int offset_tiles_ar = 0x4000 * tile_set; // Tile_Arrays is 1 byte per pixel
-            int num_sets = 1;
+            int start_tile = 256 * tile_set;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a 2bpp Tileset";
@@ -975,92 +1068,49 @@ namespace M1TE2
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                Checkpoint();
+
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
                 if (fs.Length >= 16) // at least one tile.
                 {
-                    size_temp_tiles = (int)fs.Length & 0xf000; // round down to nearest 1000
-                    
-                    if(((int)fs.Length & 0x0fff) > 0) // handle weird sizes.
-                    {
-                        // just bump up to next size.
-                        size_temp_tiles = size_temp_tiles + 0x1000;
-                    }
-                    if (size_temp_tiles < 0x1000) // min, 1 tileset worth.
-                    {
-                        size_temp_tiles = 0x1000;
-                    }
-                    if (fs.Length > 0x4000)
-                    {
-                        size_temp_tiles = 0x4000; // max, 4 tilesets worth.
-                    }
-                    if(size_temp_tiles == 0x4000)
-                    {
-                        // offset_tiles_ar = 10000, 14000, 18000, or 1c000
-                        offset_tiles_ar = 0x10000;
-                        num_sets = 4;
-                    }
-                    if (size_temp_tiles == 0x3000) // 3 sets
-                    {
-                        if (tile_set == 4)
-                        {
-                            offset_tiles_ar = 0x10000;
-                        }
-                        else
-                        {
-                            offset_tiles_ar = 0x14000;
-                        }
-                        num_sets = 3;
-                    }
-                    if (size_temp_tiles == 0x2000) // middle size, 2 sets
-                    {
-                        if(tile_set < 6)
-                        {
-                            offset_tiles_ar = 0x10000;
-                        }
-                        else
-                        {
-                            offset_tiles_ar = 0x18000;
-                        }
-                        num_sets = 2;
-                    }
-                    //note, if 0x1000, already set above
+                    // refactored, loads to the start of the currently selected tile
 
-                    // make sure don't try to copy more bytes than exist.
-                    int min_size = size_temp_tiles;
-                    if(min_size > fs.Length)
-                    {
-                        min_size = (int)fs.Length;
-                    }
+                    size_temp_tiles = (int)fs.Length;
+                    if (size_temp_tiles > 0x4000) size_temp_tiles = 0x4000;
+
+                    int num_tiles = size_temp_tiles / 16;
+                    if (num_tiles < 1) num_tiles = 1; // min
+                    if (num_tiles > 1024) num_tiles = 1024; // max
 
                     // copy file to the temp array.
-                    for (int i = 0; i < min_size; i++)
+                    for (int i = 0; i < size_temp_tiles; i++)
                     {
                         temp_tiles[i] = (byte)fs.ReadByte();
                     }
 
 
-                    for(int temp_set = 0; temp_set < num_sets; temp_set++)
+                    for (int i = 0; i < num_tiles; i++)
                     {
-                        for (int i = 0; i < 256; i++) // 256 tiles
-                        {
-                            int index = (temp_set * 0x1000) + (16 * i); // start of current tile
-                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
-                            {
-                                // get the 4 bitplanes for each tile row
-                                int y2 = y * 2; //0,2,4,6,8,10,12,14
-                                bit1[y] = temp_tiles[index + y2];
-                                bit2[y] = temp_tiles[index + y2 + 1];
+                        if (start_tile + i >= 2048) break;
+                        
+                        int index = 16 * i; // start of current tile
 
-                                int offset = offset_tiles_ar + (temp_set * 256 * 8 * 8) + (i * 8 * 8) + (y * 8);
-                                for (int x = 7; x >= 0; x--) // right to left
-                                {
-                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
-                                    bit1[y] = bit1[y] >> 1;
-                                    temp2 = bit2[y] & 1;
-                                    bit2[y] = bit2[y] >> 1;
-                                    Tiles.Tile_Arrays[offset  + x] =
-                                        (temp2 << 1) + temp1;
-                                }
+                        for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                        {
+                            // get the 4 bitplanes for each tile row
+                            int y2 = y * 2; //0,2,4,6,8,10,12,14
+                            bit1[y] = temp_tiles[index + y2];
+                            bit2[y] = temp_tiles[index + y2 + 1];
+
+                            int offset = offset_tiles_ar + (i * 64) + (y * 8);
+                            for (int x = 7; x >= 0; x--) // right to left
+                            {
+                                temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                bit1[y] = bit1[y] >> 1;
+                                temp2 = bit2[y] & 1;
+                                bit2[y] = bit2[y] >> 1;
+                                Tiles.Tile_Arrays[offset + x] =
+                                    (temp2 << 1) + temp1;
                             }
                         }
                     }
@@ -1104,7 +1154,7 @@ namespace M1TE2
             // tile_set assumed to be 0-3
             // so offset_tiles_ar = 0, 4000, 8000, or c000
             int offset_tiles_ar = 0x4000 * tile_set; // Tile_Arrays is 1 byte per pixel
-            int num_sets = 1;
+            int start_tile = 256 * tile_set;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a 4bpp Tileset";
@@ -1112,94 +1162,55 @@ namespace M1TE2
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                Checkpoint();
+
                 System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
-                if (fs.Length >= 16) // at least one tile.
+                if (fs.Length >= 32) // at least one tile.
                 {
-                    size_temp_tiles = (int)fs.Length & 0xe000; // round down to nearest 2000
+                    // refactored, loads to the start of the currently selected tile
 
-                    if (((int)fs.Length & 0x1fff) > 0) // handle weird sizes.
-                    {
-                        // just bump up to next size.
-                        size_temp_tiles = size_temp_tiles + 0x2000;
-                    }
-                    if (size_temp_tiles < 0x2000) // min, 1 tileset worth.
-                    {
-                        size_temp_tiles = 0x2000;
-                    }
-                    if (fs.Length > 0x8000)
-                    {
-                        size_temp_tiles = 0x8000; // max, 4 tilesets worth.
-                    }
-                    if (size_temp_tiles == 0x8000)
-                    {
-                        // offset_tiles_ar = 10000, 14000, 18000, or 1c000
-                        offset_tiles_ar = 0;
-                        num_sets = 4;
-                    }
-                    if (size_temp_tiles == 0x6000) // 3 sets
-                    {
-                        if (tile_set == 0)
-                        {
-                            offset_tiles_ar = 0;
-                        }
-                        else
-                        {
-                            offset_tiles_ar = 0x4000;
-                        }
-                        num_sets = 3;
-                    }
-                    if (size_temp_tiles == 0x4000) // middle size, 2 sets
-                    {
-                        if (tile_set > 2)
-                        {
-                            offset_tiles_ar = 0x8000;
-                        }
-                        num_sets = 2;
-                    }
-                    //note, if 0x2000, already set above
+                    size_temp_tiles = (int)fs.Length;
+                    if (size_temp_tiles > 0x8000) size_temp_tiles = 0x8000; // max
 
-                    // make sure don't try to copy more bytes than exist.
-                    int min_size = size_temp_tiles;
-                    if (min_size > fs.Length)
-                    {
-                        min_size = (int)fs.Length;
-                    }
+                    int num_tiles = size_temp_tiles / 32;
+                    if (num_tiles < 1) num_tiles = 1; // min
+                    if (num_tiles > 1024) num_tiles = 1024; // max
 
                     // copy file to the temp array.
-                    for (int i = 0; i < min_size; i++)
+                    for (int i = 0; i < size_temp_tiles; i++)
                     {
                         temp_tiles[i] = (byte)fs.ReadByte();
                     }
 
 
-                    for (int temp_set = 0; temp_set < num_sets; temp_set++)
+                    for (int i = 0; i < num_tiles; i++)
                     {
-                        for (int i = 0; i < 256; i++) // 256 tiles
-                        {
-                            int index = (temp_set * 0x2000) + (32 * i); // start of current tile
-                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
-                            {
-                                // get the 4 bitplanes for each tile row
-                                int y2 = y * 2; //0,2,4,6,8,10,12,14
-                                bit1[y] = temp_tiles[index + y2];
-                                bit2[y] = temp_tiles[index + y2 + 1];
-                                bit3[y] = temp_tiles[index + y2 + 16];
-                                bit4[y] = temp_tiles[index + y2 + 17];
+                        if (start_tile + i >= 1024) break;
 
-                                int offset = offset_tiles_ar + (temp_set * 256 * 8 * 8) + (i * 8 * 8) + (y * 8);
-                                for (int x = 7; x >= 0; x--) // right to left
-                                {
-                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
-                                    bit1[y] = bit1[y] >> 1;
-                                    temp2 = bit2[y] & 1;
-                                    bit2[y] = bit2[y] >> 1;
-                                    temp3 = bit3[y] & 1;
-                                    bit3[y] = bit3[y] >> 1;
-                                    temp4 = bit4[y] & 1;
-                                    bit4[y] = bit4[y] >> 1;
-                                    Tiles.Tile_Arrays[offset + x] =
-                                        (temp4 << 3) + (temp3 << 2) + (temp2 << 1) + temp1;
-                                }
+                        int index = 32 * i; // start of current tile
+
+                        for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                        {
+                            // get the 4 bitplanes for each tile row
+                            int y2 = y * 2;
+                            bit1[y] = temp_tiles[index + y2];
+                            bit2[y] = temp_tiles[index + y2 + 1];
+                            bit3[y] = temp_tiles[index + y2 + 16];
+                            bit4[y] = temp_tiles[index + y2 + 17];
+
+                            int offset = offset_tiles_ar + (i * 64) + (y * 8);
+                            for (int x = 7; x >= 0; x--) // right to left
+                            {
+                                temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                bit1[y] = bit1[y] >> 1;
+                                temp2 = bit2[y] & 1;
+                                bit2[y] = bit2[y] >> 1;
+                                temp3 = bit3[y] & 1;
+                                bit3[y] = bit3[y] >> 1;
+                                temp4 = bit4[y] & 1;
+                                bit4[y] = bit4[y] >> 1;
+                                Tiles.Tile_Arrays[offset + x] =
+                                    (temp4 << 3) + (temp3 << 2) + (temp2 << 1) + temp1;
                             }
                         }
                     }
@@ -1221,7 +1232,130 @@ namespace M1TE2
 
 
 
-        
+
+
+        private void loadToSelectedTileToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILES / Load to selected tile
+
+            int[] bit1 = new int[8]; // bit planes
+            int[] bit2 = new int[8];
+            int[] bit3 = new int[8];
+            int[] bit4 = new int[8];
+            int temp1, temp2, temp3, temp4;
+            int[] temp_tiles = new int[0x8000];
+            int size_temp_tiles = 0;
+
+            // tile_set 0-7
+            int offset_tiles_ar = (tile_x * 64) + (tile_y * 1024) + (tile_set * 0x4000);
+
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.Title = "Load tiles to the selected tile";
+            openFileDialog1.Filter = "Tileset (*.chr)|*.chr|All files (*.*)|*.*";
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                Checkpoint();
+
+                System.IO.FileStream fs = (System.IO.FileStream)openFileDialog1.OpenFile();
+                if (fs.Length >= 32) // at least one tile.
+                {
+                    size_temp_tiles = (int)fs.Length & 0xfff0; // round down
+                    if (size_temp_tiles > 0x8000) size_temp_tiles = 0x8000; // max
+                    // copy file to the temp array.
+                    for (int i = 0; i < size_temp_tiles; i++)
+                    {
+                        temp_tiles[i] = (byte)fs.ReadByte();
+                    }
+
+                    int num_loops;
+                    int chr_index = 0;
+
+                    if (tile_set > 3) // 2bpp
+                    {
+                        num_loops = size_temp_tiles / 16; // 16 bytes per tile
+                        for (int i = 0; i < num_loops; i++)
+                        {
+                            // get 16 bytes per tile
+                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                            {
+                                // get the 2 bitplanes for each tile row
+                                bit1[y] = temp_tiles[chr_index++];
+                                bit2[y] = temp_tiles[chr_index++];
+
+                                for (int x = 7; x >= 0; x--) // right to left
+                                {
+                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                    bit1[y] = bit1[y] >> 1;
+                                    temp2 = bit2[y] & 1;
+                                    bit2[y] = bit2[y] >> 1;
+                                    Tiles.Tile_Arrays[offset_tiles_ar + x] =
+                                        (temp2 << 1) + temp1;
+
+                                }
+                                offset_tiles_ar += 8;
+                            }
+
+                            //don't go too far, even if more tiles to read
+                            if (offset_tiles_ar >= 131072) break; // end of the 2nd set
+                        }
+                    }
+                    else // 4bpp
+                    {
+
+                        num_loops = size_temp_tiles / 32; // 32 bytes per tile
+                        for (int i = 0; i < num_loops; i++)
+                        {
+                            // get 32 bytes per tile
+                            for (int y = 0; y < 8; y++) // get 8 sets of bitplanes
+                            {
+                                // get the 4 bitplanes for each tile row
+                                int y2 = y * 2;
+                                bit1[y] = temp_tiles[chr_index + y2];
+                                bit2[y] = temp_tiles[chr_index + y2 + 1];
+                                bit3[y] = temp_tiles[chr_index + y2 + 16];
+                                bit4[y] = temp_tiles[chr_index + y2 + 17];
+
+                                for (int x = 7; x >= 0; x--) // right to left
+                                {
+                                    temp1 = bit1[y] & 1;    // get a bit from each bitplane
+                                    bit1[y] = bit1[y] >> 1;
+                                    temp2 = bit2[y] & 1;
+                                    bit2[y] = bit2[y] >> 1;
+                                    temp3 = bit3[y] & 1;
+                                    bit3[y] = bit3[y] >> 1;
+                                    temp4 = bit4[y] & 1;
+                                    bit4[y] = bit4[y] >> 1;
+                                    Tiles.Tile_Arrays[offset_tiles_ar + x] =
+                                        (temp4 << 3) + (temp3 << 2) + (temp2 << 1) + temp1;
+                                }
+                                offset_tiles_ar += 8;
+                            }
+                            chr_index += 32;
+
+                            //don't go too far, even if more tiles to read
+                            if (offset_tiles_ar >= 65536) break; // end of the 1st set
+                        }
+                    }
+
+                }
+                else
+                {
+                    MessageBox.Show("File size error. Too small.",
+                    "File size error", MessageBoxButtons.OK);
+                }
+
+                fs.Close();
+
+                common_update2();
+
+                disable_map_click = 1;  // fix bug, double click causing
+                                        // mouse event on tilemap
+            }
+
+        }
+
+
+
 
 
 
@@ -1251,7 +1385,6 @@ namespace M1TE2
                 System.IO.FileStream fs = (System.IO.FileStream)saveFileDialog1.OpenFile();
                 for (int i = 0; i < 256; i++) // 256 tiles
                 {
-                    //int z = (tile_set * 256 * 8 * 8) + (64 * i); // start of current tile
                     int z = (tile_set * 256 * 8 * 8) + (64 * i); // start of current tile
                     for (int y = 0; y < 8; y++)
                     {
@@ -1312,7 +1445,7 @@ namespace M1TE2
 
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.Filter = "Tileset (*.chr)|*.chr|RLE File (*.rle)|*.rle";
-            saveFileDialog1.Title = "Save a 2bpp Tileset";
+            saveFileDialog1.Title = "Save all 2bpp Tilesets";
             saveFileDialog1.ShowDialog();
 
             if (saveFileDialog1.FileName != "")
@@ -1536,8 +1669,41 @@ namespace M1TE2
 
 
 
+
+
+        private void saveTilesInARangeToolStripMenuItem_Click(object sender, EventArgs e)
+        { // TILES / save in a range
+            if (map_view > 2)
+            {
+                MessageBox.Show("First select BG View = 1,2, or 3.");
+                return;
+            }
+
+            // open Form4, Options for saving a specific range of tiles
+            if (newChild4 != null)
+            {
+                newChild4.BringToFront();
+            }
+            else
+            {
+                newChild4 = new Form4();
+                newChild4.Owner = this;
+
+                newChild4.Top = this.Top + 100;
+                newChild4.Left = this.Left + 100;
+
+                newChild4.Show();
+
+            }
+        }
+
+
+
+
         private void clearAllTilesToolStripMenuItem1_Click(object sender, EventArgs e)
         { // TILES / CLEAR ALL TILES
+            Checkpoint();
+
             for (int i = 0; i < 131072; i++)
             {
                 Tiles.Tile_Arrays[i] = 0;
@@ -1589,21 +1755,7 @@ namespace M1TE2
                     }
 
                     // update the numbers in the boxes
-                    temp = pal_x + (pal_y * 16);
-                    
-                    int red = Palettes.pal_r[temp];
-                    textBox1.Text = red.ToString();
-                    trackBar1.Value = red / 8;
-
-                    int green = Palettes.pal_g[temp];
-                    textBox2.Text = green.ToString();
-                    trackBar2.Value = green / 8;
-
-                    int blue = Palettes.pal_b[temp];
-                    textBox3.Text = blue.ToString();
-                    trackBar3.Value = blue / 8;
-
-                    update_box4();
+                    rebuild_pal_boxes();
                     update_palette();
                     common_update2();
                 }
@@ -1663,21 +1815,7 @@ namespace M1TE2
                     }
 
                     // update the numbers in the boxes
-                    temp = pal_x + (pal_y * 16);
-                    
-                    int red = Palettes.pal_r[temp];
-                    textBox1.Text = red.ToString();
-                    trackBar1.Value = red / 8;
-
-                    int green = Palettes.pal_g[temp];
-                    textBox2.Text = green.ToString();
-                    trackBar2.Value = green / 8;
-
-                    int blue = Palettes.pal_b[temp];
-                    textBox3.Text = blue.ToString();
-                    trackBar3.Value = blue / 8;
-
-                    update_box4();
+                    rebuild_pal_boxes();
                     update_palette();
                     common_update2();
                 }
@@ -1702,7 +1840,7 @@ namespace M1TE2
             int temp, max_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            openFileDialog1.Title = "Select a Palette file";
+            openFileDialog1.Title = "Select a Palette file RGB";
             openFileDialog1.Filter = "Palette files (*.pal)|*.pal|All files (*.*)|*.*";
 
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -1732,21 +1870,7 @@ namespace M1TE2
                     }
 
                     // update the numbers in the boxes
-                    temp = pal_x + (pal_y * 16);
-                    
-                    int red = Palettes.pal_r[temp];
-                    textBox1.Text = red.ToString();
-                    trackBar1.Value = red / 8;
-
-                    int green = Palettes.pal_g[temp];
-                    textBox2.Text = green.ToString();
-                    trackBar2.Value = green / 8;
-
-                    int blue = Palettes.pal_b[temp];
-                    textBox3.Text = blue.ToString();
-                    trackBar3.Value = blue / 8;
-
-                    update_box4();
+                    rebuild_pal_boxes();
                     update_palette();
                     common_update2();
                 }
@@ -1877,7 +2001,7 @@ namespace M1TE2
 
 
         private void savePalAsRGBToolStripMenuItem_Click(object sender, EventArgs e)
-        { // PALETTE / SAVE PAL AS RBG (for YY-CHR)
+        { // PALETTE / SAVE PAL AS RGB (for YY-CHR)
             byte[] pal_array = new byte[384]; // 128 entries * 3 = r,g,b
             int temp;
             int offset = 0;
@@ -1890,7 +2014,7 @@ namespace M1TE2
 
             SaveFileDialog saveFileDialog1 = new SaveFileDialog();
             saveFileDialog1.Filter = "Palette (*.pal)|*.pal|All files (*.*)|*.*";
-            saveFileDialog1.Title = "Save a Palette";
+            saveFileDialog1.Title = "Save a Palette RGB";
             saveFileDialog1.ShowDialog();
 
             if (saveFileDialog1.FileName != "")
@@ -2121,6 +2245,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
         private void set14bppToolStripMenuItem_Click(object sender, EventArgs e)
         { // TILESET / SET 1
@@ -2160,6 +2285,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set24bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2200,6 +2326,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set32bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2240,6 +2367,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set44bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2279,6 +2407,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set52bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2318,6 +2447,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set62bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2357,6 +2487,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set72bppToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2396,6 +2527,7 @@ namespace M1TE2
 
             common_update2(); // includes map
             update_palette();
+            tile_show_num();
         }
 
         private void set82bppToolStripMenuItem_Click(object sender, EventArgs e)

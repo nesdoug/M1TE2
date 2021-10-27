@@ -115,7 +115,7 @@ namespace M1TE2
                 if (pixel_y > 7) pixel_y = 7;
 
                 int index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (pixel_y * 8) + pixel_x;
-                int color = 0;// (Form1.pal_y * 16) + Form1.pal_x; // which color is selected in palette
+                int color = 0;// which color is selected in palette
                 if (Form1.map_view == 2) // 2bpp
                 {
                     color = Form1.pal_x & 0x03;
@@ -158,6 +158,8 @@ namespace M1TE2
 
             if(e.Button == MouseButtons.Left)
             {
+                //f.Checkpoint();
+                
                 int color = 0; // (Form1.pal_y * 16) + Form1.pal_x; // which color is selected in palette
                 if (Form1.map_view == 2) // 2bpp
                 {
@@ -181,7 +183,7 @@ namespace M1TE2
                     Form1.pal_x = color;
                 }
                 f.update_palette();
-
+                f.rebuild_pal_boxes();
             }
 
 
@@ -209,21 +211,25 @@ namespace M1TE2
 
             if (e.KeyCode == Keys.Left)
             {
+                f.Checkpoint();
                 Tiles.shift_left();
                 common_update();
             }
             else if (e.KeyCode == Keys.Up)
             {
+                f.Checkpoint();
                 Tiles.shift_up();
                 common_update();
             }
             else if (e.KeyCode == Keys.Right)
             {
+                f.Checkpoint();
                 Tiles.shift_right();
                 common_update();
             }
             else if (e.KeyCode == Keys.Down)
             {
+                f.Checkpoint();
                 Tiles.shift_down();
                 common_update();
             }
@@ -253,26 +259,31 @@ namespace M1TE2
             }
             else if (e.KeyCode == Keys.H)
             {
+                f.Checkpoint();
                 Tiles.tile_h_flip();
                 common_update();
             }
             else if (e.KeyCode == Keys.V)
             {
+                f.Checkpoint();
                 Tiles.tile_v_flip();
                 common_update();
             }
             else if (e.KeyCode == Keys.R)
             {
+                f.Checkpoint();
                 Tiles.tile_rot_cw();
                 common_update();
             }
             else if (e.KeyCode == Keys.L)
             {
+                f.Checkpoint();
                 Tiles.tile_rot_ccw();
                 common_update();
             }
             else if (e.KeyCode == Keys.Delete)
             {
+                f.Checkpoint();
                 Tiles.tile_delete();
                 common_update();
             }
@@ -283,11 +294,13 @@ namespace M1TE2
             }
             else if (e.KeyCode == Keys.P)
             {
+                f.Checkpoint();
                 Tiles.tile_paste();
                 common_update();
             }
             else if (e.KeyCode == Keys.F)
             {
+                f.Checkpoint();
                 Tiles.tile_fill();
                 common_update();
             }
@@ -324,6 +337,12 @@ namespace M1TE2
                 f.set8_change();
             }
 
+            else if (e.KeyCode == Keys.Z)
+            {
+                f.Do_Undo();
+                common_update();
+            }
+
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
@@ -332,6 +351,18 @@ namespace M1TE2
             f.update_tilemap();
         }
 
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            Form1 f = (this.Owner as Form1);
 
+            var mouseEventArgs = e as MouseEventArgs;
+            if (mouseEventArgs == null) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                f.Checkpoint();
+
+            }
+        }
     }
 }
