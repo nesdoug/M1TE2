@@ -40,6 +40,11 @@ Main:
 	lda #1
 	sta MDMAEN ; $420b start dma, channel 0
 	
+; make sure color zero is black too
+	stz CGADD ; $2121 cgram address
+	stz $2122 ; cg data
+	stz $2122 ; cg data
+	
 	
 ; DMA from Tiles to VRAM	
 	lda #V_INC_1 ; the value $80
