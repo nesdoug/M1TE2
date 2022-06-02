@@ -729,35 +729,35 @@
             this.bG1TopToolStripMenuItem.Checked = true;
             this.bG1TopToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.bG1TopToolStripMenuItem.Name = "bG1TopToolStripMenuItem";
-            this.bG1TopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bG1TopToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.bG1TopToolStripMenuItem.Text = "BG1 4bpp";
             this.bG1TopToolStripMenuItem.Click += new System.EventHandler(this.bG1TopToolStripMenuItem_Click);
             // 
             // bG2ToolStripMenuItem
             // 
             this.bG2ToolStripMenuItem.Name = "bG2ToolStripMenuItem";
-            this.bG2ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bG2ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.bG2ToolStripMenuItem.Text = "BG2 4bpp";
             this.bG2ToolStripMenuItem.Click += new System.EventHandler(this.bG2ToolStripMenuItem_Click);
             // 
             // bG3ToolStripMenuItem
             // 
             this.bG3ToolStripMenuItem.Name = "bG3ToolStripMenuItem";
-            this.bG3ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.bG3ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.bG3ToolStripMenuItem.Text = "BG3 2bpp";
             this.bG3ToolStripMenuItem.Click += new System.EventHandler(this.bG3ToolStripMenuItem_Click);
             // 
             // previewAllToolStripMenuItem
             // 
             this.previewAllToolStripMenuItem.Name = "previewAllToolStripMenuItem";
-            this.previewAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.previewAllToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.previewAllToolStripMenuItem.Text = "Preview 1/2/3";
             this.previewAllToolStripMenuItem.Click += new System.EventHandler(this.previewAllToolStripMenuItem_Click);
             // 
             // preview312ToolStripMenuItem
             // 
             this.preview312ToolStripMenuItem.Name = "preview312ToolStripMenuItem";
-            this.preview312ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.preview312ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
             this.preview312ToolStripMenuItem.Text = "Preview 3/1/2";
             this.preview312ToolStripMenuItem.Click += new System.EventHandler(this.preview312ToolStripMenuItem_Click);
             // 
@@ -782,56 +782,56 @@
             this.set14bppToolStripMenuItem.Checked = true;
             this.set14bppToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.set14bppToolStripMenuItem.Name = "set14bppToolStripMenuItem";
-            this.set14bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set14bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set14bppToolStripMenuItem.Text = "Set 1 4bpp";
             this.set14bppToolStripMenuItem.Click += new System.EventHandler(this.set14bppToolStripMenuItem_Click);
             // 
             // set24bppToolStripMenuItem
             // 
             this.set24bppToolStripMenuItem.Name = "set24bppToolStripMenuItem";
-            this.set24bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set24bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set24bppToolStripMenuItem.Text = "Set 2 4bpp";
             this.set24bppToolStripMenuItem.Click += new System.EventHandler(this.set24bppToolStripMenuItem_Click);
             // 
             // set34bppToolStripMenuItem
             // 
             this.set34bppToolStripMenuItem.Name = "set34bppToolStripMenuItem";
-            this.set34bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set34bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set34bppToolStripMenuItem.Text = "Set 3 4bpp";
             this.set34bppToolStripMenuItem.Click += new System.EventHandler(this.set32bppToolStripMenuItem_Click);
             // 
             // set44bppToolStripMenuItem
             // 
             this.set44bppToolStripMenuItem.Name = "set44bppToolStripMenuItem";
-            this.set44bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set44bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set44bppToolStripMenuItem.Text = "Set 4 4bpp";
             this.set44bppToolStripMenuItem.Click += new System.EventHandler(this.set44bppToolStripMenuItem_Click);
             // 
             // set52bppToolStripMenuItem
             // 
             this.set52bppToolStripMenuItem.Name = "set52bppToolStripMenuItem";
-            this.set52bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set52bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set52bppToolStripMenuItem.Text = "Set 5 2bpp";
             this.set52bppToolStripMenuItem.Click += new System.EventHandler(this.set52bppToolStripMenuItem_Click);
             // 
             // set62bppToolStripMenuItem
             // 
             this.set62bppToolStripMenuItem.Name = "set62bppToolStripMenuItem";
-            this.set62bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set62bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set62bppToolStripMenuItem.Text = "Set 6 2bpp";
             this.set62bppToolStripMenuItem.Click += new System.EventHandler(this.set62bppToolStripMenuItem_Click);
             // 
             // set72bppToolStripMenuItem
             // 
             this.set72bppToolStripMenuItem.Name = "set72bppToolStripMenuItem";
-            this.set72bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set72bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set72bppToolStripMenuItem.Text = "Set 7 2bpp";
             this.set72bppToolStripMenuItem.Click += new System.EventHandler(this.set72bppToolStripMenuItem_Click);
             // 
             // set82bppToolStripMenuItem
             // 
             this.set82bppToolStripMenuItem.Name = "set82bppToolStripMenuItem";
-            this.set82bppToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.set82bppToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.set82bppToolStripMenuItem.Text = "Set 8 2bpp";
             this.set82bppToolStripMenuItem.Click += new System.EventHandler(this.set82bppToolStripMenuItem_Click);
             // 
@@ -846,7 +846,7 @@
             // aboutM1TEToolStripMenuItem
             // 
             this.aboutM1TEToolStripMenuItem.Name = "aboutM1TEToolStripMenuItem";
-            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.aboutM1TEToolStripMenuItem.Text = "About M1TE";
             this.aboutM1TEToolStripMenuItem.Click += new System.EventHandler(this.aboutM1TEToolStripMenuItem_Click);
             // 
@@ -1178,7 +1178,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.1";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.2";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();

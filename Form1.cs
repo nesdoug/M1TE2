@@ -240,7 +240,8 @@ namespace M1TE2
         // 16x16 grid
         private void checkBox4_CheckedChanged(object sender, EventArgs e)
         {
-            update_tilemap();
+            //update_tilemap();
+            common_update2();
             label5.Focus();
         }
 
@@ -449,7 +450,6 @@ namespace M1TE2
 
         public void update_tilemap16x16()
         {
-            label6.Text = "here1"; // debugging
             
             //default BG, draw color 0 all over the BG
             int r = Palettes.pal_r[0];
@@ -1379,9 +1379,32 @@ namespace M1TE2
                 g.DrawImage(image_tiles, 0, 0, 256, 256);
             } // standard resize of bmp was blurry, this makes it sharp
 
+            // draw grid lines, if checkbox
+            if (checkBox4.Checked == true)
+            {
+                //draw horizontal lines at each 16
+                for (int i = 31; i < 255; i += 32)
+                {
+                    for (int j = 0; j < 255; j += 2)
+                    {
+                        temp_bmp.SetPixel(j, i, Color.Black);
+                        temp_bmp.SetPixel(j + 1, i, Color.LightGray);
+                    }
+                }
+                //draw vertical lines at each 16
+                for (int j = 31; j < 255; j += 32)
+                {
+                    for (int i = 0; i < 255; i += 2)
+                    {
+                        temp_bmp.SetPixel(j, i + 1, Color.Black);
+                        temp_bmp.SetPixel(j, i, Color.LightGray);
+                    }
+                }
+            }
+
             //put a white box around the selected tile
             int pos_x = 0; int pos_y = 0;
-            if(tilesize == TILE_8X8)
+            if((tilesize == TILE_8X8) && (brushsize != BRUSHNEXT))
             {
                 for (int i = 0; i < 16; i++)
                 {
@@ -1391,8 +1414,8 @@ namespace M1TE2
                     if (pos_x < 0) pos_x = 0;
                     temp_bmp.SetPixel(pos_x + i, pos_y, Color.White);
                     temp_bmp.SetPixel(pos_x, pos_y + i, Color.White);
-                    temp_bmp.SetPixel(pos_x + i, pos_y + 15, Color.White);
-                    temp_bmp.SetPixel(pos_x + 15, pos_y + i, Color.White);
+                    temp_bmp.SetPixel(pos_x + i, pos_y + 16, Color.White);
+                    temp_bmp.SetPixel(pos_x + 16, pos_y + i, Color.White);
                 }
             }
             else // 16x16 tiles, draw a bigger box
@@ -1411,13 +1434,13 @@ namespace M1TE2
                     {
                         temp_bmp.SetPixel(pos_x, pos_y + i, Color.White); // left
                     }
-                    if (((pos_x + i) < 256) && ((pos_y + 31) < 256))
+                    if (((pos_x + i) < 256) && ((pos_y + 32) < 256))
                     {
-                        temp_bmp.SetPixel(pos_x + i, pos_y + 31, Color.White); // right
+                        temp_bmp.SetPixel(pos_x + i, pos_y + 32, Color.White); // right
                     }
-                    if (((pos_x + 31) < 256) && ((pos_y + i) < 256))
+                    if (((pos_x + 32) < 256) && ((pos_y + i) < 256))
                     {
-                        temp_bmp.SetPixel(pos_x + 31, pos_y + i, Color.White); // bottom
+                        temp_bmp.SetPixel(pos_x + 32, pos_y + i, Color.White); // bottom
                     }
                     
                 }
@@ -2306,6 +2329,8 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2318,6 +2343,8 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         private void x5ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2330,6 +2357,8 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         // this should be in menuclicks.cs
@@ -2412,6 +2441,8 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = true;
+
+            update_tile_image();
         }
 
         private void trackBar1_MouseUp(object sender, MouseEventArgs e)
@@ -3100,6 +3131,7 @@ namespace M1TE2
             x16TilesToolStripMenuItem.Checked = false;
             tilesize = TILE_8X8;
             label8.Text = "8x8";
+            Tiles.Nix_Copy();
 
             common_update2();
         }
@@ -3134,6 +3166,8 @@ namespace M1TE2
             x16TilesToolStripMenuItem.Checked = true;
             tilesize = TILE_16X16;
             label8.Text = "16x16";
+
+            Tiles.Nix_Copy();
 
             if ( brushsize == BRUSHNEXT )
             {
@@ -3900,16 +3934,13 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         private void cloneFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            /*if (tilesize != TILE_8X8)
-            {
-                MessageBox.Show("This brush is disallowed in 16x16 Mode.");
-                return;
-            }*/
-
+            
             brushsize = BRUSH_CLONE_T;
             x1ToolStripMenuItem.Checked = false;
             x3ToolStripMenuItem.Checked = false;
@@ -3918,16 +3949,13 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = true;
             cloneFromMapToolStripMenuItem.Checked = false;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         private void cloneFromMapToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            /*if (tilesize != TILE_8X8)
-            {
-                MessageBox.Show("This brush is disallowed in 16x16 Mode.");
-                return;
-            }*/
-
+            
             brushsize = BRUSH_CLONE_M;
             x1ToolStripMenuItem.Checked = false;
             x3ToolStripMenuItem.Checked = false;
@@ -3936,6 +3964,8 @@ namespace M1TE2
             cloneFromTilesetToolStripMenuItem.Checked = false;
             cloneFromMapToolStripMenuItem.Checked = true;
             fillScreenToolStripMenuItem.Checked = false;
+
+            update_tile_image();
         }
 
         private void button2_Click(object sender, EventArgs e)

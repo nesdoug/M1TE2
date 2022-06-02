@@ -1,5 +1,5 @@
-M1TE ver 3.1 (SNES Mode 1 Tile Editor) 
-Oct 27, 2021
+M1TE ver 3.2 (SNES Mode 1 Tile Editor) 
+June 1, 2022
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -66,6 +66,12 @@ version changes
 3.0 - basic undo function (press Z)
       16x16 tilesize option
 3.1 - minor changes and bug fixes for 16x16 mode
+3.2 - 16x16 tile functions work in 16x16...
+      such as flip, rotate, delete, fill, copy
+      (fails if you highlight the right most
+      or the bottom most tile in a set)
+    - tile editor can view a full 16x16 tile
+    - 16x16 grid also highlights the tileset
 
 
 Note, the RLE is a special compression format that I wrote, 

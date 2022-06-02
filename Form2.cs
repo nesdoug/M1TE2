@@ -33,63 +33,266 @@ namespace M1TE2
         public void update_tile_box()
         {
             Color temp_color;
-            for (int i = 0;i < 8; ++i) //row = y
+            if (Form1.tilesize == Form1.TILE_8X8)
             {
-                for(int j = 0;j < 8; ++j) //column = x
+                for (int i = 0; i < 8; i++) //row = y
                 {
-                    int color = 0;
-                    int index = (Form1.tile_set*256*8*8) + (Form1.tile_num*8*8) + (i*8) + j;
-                    int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
-                    if (Form1.map_view == 2) // 2bpp
+                    for (int j = 0; j < 8; j++) //column = x
                     {
-                        pal_index = pal_index & 0x03; //sanitize, for my sanity
-                        if (pal_index == 0)
+                        int color = 0;
+                        int index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (i * 8) + j;
+                        int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
+                        if (Form1.map_view == 2) // 2bpp
                         {
-                            color = 0; // 0th color
+                            pal_index = pal_index & 0x03; //sanitize, for my sanity
+                            if (pal_index == 0)
+                            {
+                                color = 0; // 0th color
+                            }
+                            else
+                            {
+                                color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                            }
                         }
-                        else
+                        else // 4bpp
                         {
-                            color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                            pal_index = pal_index & 0x0f; //sanitize, for my sanity
+                            color = (Form1.pal_y * 16) + pal_index;
                         }
-                    }
-                    else // 4bpp
-                    {
-                        pal_index = pal_index & 0x0f; //sanitize, for my sanity
-                        color = (Form1.pal_y * 16) + pal_index;
-                    }
-                    
-                    temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
 
-                    //TODO refactor this with graphics rectangles ?
-                    for (int k = 0;k < 15; ++k) // x pixel
-                    { //128 / 8 = 16, last one = white line
-                        for (int m = 0;m < 15; ++m) // y pixel
-                        {
-                            image_tile_box.SetPixel((j*16)+m, (i*16)+k, temp_color);
+                        temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
+
+                        for (int k = 0; k < 15; k++) // x pixel
+                        { //128 / 8 = 16, last one = white line
+                            for (int m = 0; m < 15; m++) // y pixel
+                            {
+                                image_tile_box.SetPixel((j * 16) + m, (i * 16) + k, temp_color);
+                            }
+                            if (j == 7)
+                            {
+                                image_tile_box.SetPixel((j * 16) + 15, (i * 16) + k, temp_color);
+                            }
+                            else
+                            {
+                                image_tile_box.SetPixel((j * 16) + 15, (i * 16) + k, Color.White);
+                            }
                         }
-                        if(j == 7)
+                        for (int m = 0; m < 16; m++) //bottom line
                         {
-                            image_tile_box.SetPixel((j * 16) + 15, (i * 16) + k, temp_color);
+                            if (i == 7)
+                            {
+                                image_tile_box.SetPixel((j * 16) + m, (i * 16) + 15, temp_color);
+                            }
+                            else
+                            {
+                                image_tile_box.SetPixel((j * 16) + m, (i * 16) + 15, Color.White);
+                            }
+
                         }
-                        else
-                        {
-                            image_tile_box.SetPixel((j * 16) + 15, (i * 16) + k, Color.White);
-                        }
-                    }
-                    for (int m = 0; m < 16; ++m) //bottom line
-                    {
-                        if (i == 7)
-                        {
-                            image_tile_box.SetPixel((j * 16) + m, (i * 16) + 15, temp_color);
-                        }
-                        else
-                        {
-                            image_tile_box.SetPixel((j * 16) + m, (i * 16) + 15, Color.White);
-                        }
-                        
                     }
                 }
             }
+            else // 16x16
+            {
+                // fill black
+                for(int x = 0; x < 128; x++)
+                {
+                    for(int y = 0; y < 128; y++)
+                    {
+                        image_tile_box.SetPixel(x, y, Color.Black);
+                    }
+                }
+                
+                for (int i = 0; i < 8; i++) //row = y
+                {
+                    for (int j = 0; j < 8; j++) //column = x
+                    {
+                        int color = 0;
+                        int index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (i * 8) + j;
+                        int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
+                        if (Form1.map_view == 2) // 2bpp
+                        {
+                            pal_index = pal_index & 0x03; //sanitize, for my sanity
+                            if (pal_index == 0)
+                            {
+                                color = 0; // 0th color
+                            }
+                            else
+                            {
+                                color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                            }
+                        }
+                        else // 4bpp
+                        {
+                            pal_index = pal_index & 0x0f; //sanitize, for my sanity
+                            color = (Form1.pal_y * 16) + pal_index;
+                        }
+
+                        temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
+
+                        for (int k = 0; k < 7; k++) // x pixel
+                        { //128 / 8 = 16, last one = white line
+                            for (int m = 0; m < 7; m++) // y pixel
+                            {
+                                image_tile_box.SetPixel((j * 8) + m, (i * 8) + k, temp_color);
+                            }
+                            image_tile_box.SetPixel((j * 8) + 7, (i * 8) + k, Color.White);
+                        }
+                        for (int m = 0; m < 8; m++) //bottom line
+                        {
+                            image_tile_box.SetPixel((j * 8) + m, (i * 8) + 7, Color.White);
+                        }
+                    }
+                }
+                // top right
+                if(Form1.tile_x < 15)
+                {
+                    for (int i = 0; i < 8; i++) //row = y
+                    {
+                        for (int j = 0; j < 8; j++) //column = x
+                        {
+                            int color = 0;
+                            int index = (Form1.tile_set * 256 * 8 * 8) + ((Form1.tile_num + 1) * 8 * 8) + (i * 8) + j;
+                            int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
+                            if (Form1.map_view == 2) // 2bpp
+                            {
+                                pal_index = pal_index & 0x03; //sanitize, for my sanity
+                                if (pal_index == 0)
+                                {
+                                    color = 0; // 0th color
+                                }
+                                else
+                                {
+                                    color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                                }
+                            }
+                            else // 4bpp
+                            {
+                                pal_index = pal_index & 0x0f; //sanitize, for my sanity
+                                color = (Form1.pal_y * 16) + pal_index;
+                            }
+
+                            temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
+
+                            for (int k = 0; k < 7; k++) // x pixel
+                            { //128 / 8 = 16, last one = white line
+                                for (int m = 0; m < 7; m++) // y pixel
+                                {
+                                    image_tile_box.SetPixel((j * 8) + m + 64, (i * 8) + k, temp_color);
+                                }
+                                image_tile_box.SetPixel((j * 8) + 71, (i * 8) + k, Color.White);
+                            }
+                            for (int m = 0; m < 8; m++) //bottom line
+                            {
+                                image_tile_box.SetPixel((j * 8) + m + 64, (i * 8) + 7, Color.White);
+                            }
+                        }
+                    }
+                }
+
+                // bottom left
+                if (Form1.tile_y < 15)
+                {
+                    for (int i = 0; i < 8; i++) //row = y
+                    {
+                        for (int j = 0; j < 8; j++) //column = x
+                        {
+                            int color = 0;
+                            int index = (Form1.tile_set * 256 * 8 * 8) + ((Form1.tile_num + 16) * 8 * 8) + (i * 8) + j;
+                            int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
+                            if (Form1.map_view == 2) // 2bpp
+                            {
+                                pal_index = pal_index & 0x03; //sanitize, for my sanity
+                                if (pal_index == 0)
+                                {
+                                    color = 0; // 0th color
+                                }
+                                else
+                                {
+                                    color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                                }
+                            }
+                            else // 4bpp
+                            {
+                                pal_index = pal_index & 0x0f; //sanitize, for my sanity
+                                color = (Form1.pal_y * 16) + pal_index;
+                            }
+
+                            temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
+
+                            for (int k = 0; k < 7; k++) // x pixel
+                            { //128 / 8 = 16, last one = white line
+                                for (int m = 0; m < 7; m++) // y pixel
+                                {
+                                    image_tile_box.SetPixel((j * 8) + m, (i * 8) + k + 64, temp_color);
+                                }
+                                image_tile_box.SetPixel((j * 8) + 7, (i * 8) + k + 64, Color.White);
+                            }
+                            for (int m = 0; m < 8; m++) //bottom line
+                            {
+                                image_tile_box.SetPixel((j * 8) + m, (i * 8) + 71, Color.White);
+                            }
+                        }
+                    }
+                }
+
+                // bottom right
+                if ((Form1.tile_y < 15) && (Form1.tile_x < 15))
+                {
+                    for (int i = 0; i < 8; i++) //row = y
+                    {
+                        for (int j = 0; j < 8; j++) //column = x
+                        {
+                            int color = 0;
+                            int index = (Form1.tile_set * 256 * 8 * 8) + ((Form1.tile_num + 17) * 8 * 8) + (i * 8) + j;
+                            int pal_index = Tiles.Tile_Arrays[index]; //pixel in tile array
+                            if (Form1.map_view == 2) // 2bpp
+                            {
+                                pal_index = pal_index & 0x03; //sanitize, for my sanity
+                                if (pal_index == 0)
+                                {
+                                    color = 0; // 0th color
+                                }
+                                else
+                                {
+                                    color = (Form1.pal_y * 16) + (Form1.pal_x & 0x0c) + pal_index;
+                                }
+                            }
+                            else // 4bpp
+                            {
+                                pal_index = pal_index & 0x0f; //sanitize, for my sanity
+                                color = (Form1.pal_y * 16) + pal_index;
+                            }
+
+                            temp_color = Color.FromArgb(Palettes.pal_r[color], Palettes.pal_g[color], Palettes.pal_b[color]);
+
+                            for (int k = 0; k < 7; k++) // x pixel
+                            { //128 / 8 = 16, last one = white line
+                                for (int m = 0; m < 7; m++) // y pixel
+                                {
+                                    image_tile_box.SetPixel((j * 8) + m + 64, (i * 8) + k + 64, temp_color);
+                                }
+                                
+                                image_tile_box.SetPixel((j * 8) + 71, (i * 8) + k + 64, Color.White);
+                            }
+                            for (int m = 0; m < 8; m++) //bottom line
+                            {
+                                image_tile_box.SetPixel((j * 8) + m + 64, (i * 8) + 71, Color.White);
+                            }
+                        }
+                    }
+                }
+                // redraw black over the bottom / right white lines
+                for(int x = 0; x < 128; x++)
+                {
+                    image_tile_box.SetPixel(x, 127, Color.Black);
+                }
+                for (int y = 0; y < 128; y++)
+                {
+                    image_tile_box.SetPixel(127, y, Color.Black);
+                }
+            }
+            
 
             pictureBox1.Image = image_tile_box;
             pictureBox1.Refresh();
@@ -102,19 +305,70 @@ namespace M1TE2
             {
                 int pixel_x = 0;
                 int pixel_y = 0;
+                int index = 0;
 
-                var mouseEventArgs = e as MouseEventArgs;
-                if (mouseEventArgs != null)
+                if(Form1.tilesize == Form1.TILE_8X8)
                 {
-                    pixel_x = mouseEventArgs.X >> 4;
-                    pixel_y = mouseEventArgs.Y >> 4;
-                }
-                if (pixel_x < 0) pixel_x = 0;
-                if (pixel_y < 0) pixel_y = 0;
-                if (pixel_x > 7) pixel_x = 7;
-                if (pixel_y > 7) pixel_y = 7;
+                    var mouseEventArgs = e as MouseEventArgs;
+                    if (mouseEventArgs != null)
+                    {
+                        pixel_x = mouseEventArgs.X >> 4;
+                        pixel_y = mouseEventArgs.Y >> 4;
+                    }
+                    if (pixel_x < 0) pixel_x = 0;
+                    if (pixel_y < 0) pixel_y = 0;
+                    if (pixel_x > 7) pixel_x = 7;
+                    if (pixel_y > 7) pixel_y = 7;
 
-                int index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (pixel_y * 8) + pixel_x;
+                    index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (pixel_y * 8) + pixel_x;
+                    
+                }
+                else // 16x16
+                {
+                    int which_tile = 0;
+                    
+                    var mouseEventArgs = e as MouseEventArgs;
+                    if (mouseEventArgs != null)
+                    {
+                        pixel_x = mouseEventArgs.X;
+                        pixel_y = mouseEventArgs.Y;
+                    }
+                    if (pixel_x < 0) pixel_x = 0;
+                    if (pixel_y < 0) pixel_y = 0;
+                    if (pixel_x > 127) pixel_x = 127;
+                    if (pixel_y > 127) pixel_y = 127;
+                    
+                    if (pixel_x < 64)
+                    { // left
+                        if(pixel_y < 64)
+                        {
+                            which_tile = 0;
+                        }
+                        else
+                        {
+                            if (Form1.tile_y > 14) return;
+                            which_tile = 16;
+                        }
+                    }
+                    else // right
+                    {
+                        if (Form1.tile_x > 14) return;
+                        if (pixel_y < 64)
+                        {
+                            which_tile = 1;
+                        }
+                        else
+                        {
+                            if (Form1.tile_y > 14) return;
+                            which_tile = 17;
+                        }
+                    }
+                    pixel_x = (pixel_x >> 3) & 7;
+                    pixel_y = (pixel_y >> 3) & 7;
+                    index = (Form1.tile_set * 256 * 8 * 8) + ((Form1.tile_num+ which_tile) * 8 * 8) + (pixel_y * 8) + pixel_x;
+
+                }
+
                 int color = 0;// which color is selected in palette
                 if (Form1.map_view == 2) // 2bpp
                 {
@@ -141,22 +395,72 @@ namespace M1TE2
         {
             int pixel_x = 0;
             int pixel_y = 0;
+            int index = 0;
             Form1 f = (this.Owner as Form1);
 
-            var mouseEventArgs = e as MouseEventArgs;
-            if (mouseEventArgs != null)
+            if (Form1.tilesize == Form1.TILE_8X8)
             {
-                pixel_x = mouseEventArgs.X >> 4;
-                pixel_y = mouseEventArgs.Y >> 4;
+                var mouseEventArgs = e as MouseEventArgs;
+                if (mouseEventArgs != null)
+                {
+                    pixel_x = mouseEventArgs.X >> 4;
+                    pixel_y = mouseEventArgs.Y >> 4;
+                }
+                if (pixel_x < 0) pixel_x = 0;
+                if (pixel_y < 0) pixel_y = 0;
+                if (pixel_x > 7) pixel_x = 7;
+                if (pixel_y > 7) pixel_y = 7;
+
+                index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (pixel_y * 8) + pixel_x;
+
             }
-            if (pixel_x < 0) pixel_x = 0;
-            if (pixel_y < 0) pixel_y = 0;
-            if (pixel_x > 7) pixel_x = 7;
-            if (pixel_y > 7) pixel_y = 7;
+            else
+            {
+                int which_tile = 0;
 
-            int index = (Form1.tile_set * 256 * 8 * 8) + (Form1.tile_num * 8 * 8) + (pixel_y * 8) + pixel_x;
+                var mouseEventArgs = e as MouseEventArgs;
+                if (mouseEventArgs != null)
+                {
+                    pixel_x = mouseEventArgs.X;
+                    pixel_y = mouseEventArgs.Y;
+                }
+                if (pixel_x < 0) pixel_x = 0;
+                if (pixel_y < 0) pixel_y = 0;
+                if (pixel_x > 127) pixel_x = 127;
+                if (pixel_y > 127) pixel_y = 127;
 
-            if(e.Button == MouseButtons.Left)
+                if (pixel_x < 64)
+                { // left
+                    if (pixel_y < 64)
+                    {
+                        which_tile = 0;
+                    }
+                    else
+                    {
+                        if (Form1.tile_y > 14) return;
+                        which_tile = 16;
+                    }
+                }
+                else // right
+                {
+                    if (Form1.tile_x > 14) return;
+                    if (pixel_y < 64)
+                    {
+                        which_tile = 1;
+                    }
+                    else
+                    {
+                        if (Form1.tile_y > 14) return;
+                        which_tile = 17;
+                    }
+                }
+                pixel_x = (pixel_x >> 3) & 7;
+                pixel_y = (pixel_y >> 3) & 7;
+                index = (Form1.tile_set * 256 * 8 * 8) + ((Form1.tile_num + which_tile) * 8 * 8) + (pixel_y * 8) + pixel_x;
+
+            }
+
+            if (e.Button == MouseButtons.Left)
             {
                 //f.Checkpoint();
                 
