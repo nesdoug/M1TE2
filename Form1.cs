@@ -4337,6 +4337,9 @@ namespace M1TE2
                 pal_sel = pal_y;
             }
             int map_offset2 = 0;
+            int temp_set = tile_set;
+            if (map_view == 2) temp_set -= 4;
+            int tile_offset = temp_set * 256;
 
             if(tilesize == TILE_8X8)
             {
@@ -4352,7 +4355,7 @@ namespace M1TE2
                         if (final_map_x >= 32) break;
                         int final_tile_x = x1 + tile_x;
                         if (final_tile_x >= 16) break;
-                        tile_is = (final_tile_y * 16) + final_tile_x;
+                        tile_is = (final_tile_y * 16) + final_tile_x + tile_offset;
                         map_offset2 = map_offset + (final_map_y * 32) + final_map_x;
 
                         Maps.tile[map_offset2] = tile_is;
@@ -4379,7 +4382,7 @@ namespace M1TE2
                         if (final_map_x >= 32) break;
                         int final_tile_x = x1 + tile_x;
                         if (final_tile_x >= 16) break;
-                        tile_is = (final_tile_y * 16) + final_tile_x;
+                        tile_is = (final_tile_y * 16) + final_tile_x + tile_offset;
                         map_offset2 = map_offset + (final_map_y * 32) + final_map_x;
 
                         Maps.tile[map_offset2] = tile_is;
