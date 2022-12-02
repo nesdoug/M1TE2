@@ -114,13 +114,13 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.brushsizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.multiSelectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x5ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.x2NextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cloneFromTilesetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.cloneFromMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fillScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mapEditToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.getPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageToCHRToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -171,6 +171,9 @@
             this.pictureBox2.TabIndex = 2;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
+            this.pictureBox2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseDown);
+            this.pictureBox2.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseMove);
+            this.pictureBox2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseUp);
             // 
             // pictureBox3
             // 
@@ -846,7 +849,7 @@
             // aboutM1TEToolStripMenuItem
             // 
             this.aboutM1TEToolStripMenuItem.Name = "aboutM1TEToolStripMenuItem";
-            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.aboutM1TEToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.aboutM1TEToolStripMenuItem.Text = "About M1TE";
             this.aboutM1TEToolStripMenuItem.Click += new System.EventHandler(this.aboutM1TEToolStripMenuItem_Click);
             // 
@@ -888,21 +891,28 @@
             // brushsizeToolStripMenuItem
             // 
             this.brushsizeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.multiSelectToolStripMenuItem,
             this.x1ToolStripMenuItem,
             this.x3ToolStripMenuItem,
             this.x5ToolStripMenuItem,
             this.x2NextToolStripMenuItem,
-            this.cloneFromTilesetToolStripMenuItem,
-            this.cloneFromMapToolStripMenuItem,
-            this.fillScreenToolStripMenuItem});
+            this.fillScreenToolStripMenuItem,
+            this.mapEditToolStripMenuItem});
             this.brushsizeToolStripMenuItem.Name = "brushsizeToolStripMenuItem";
             this.brushsizeToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
             this.brushsizeToolStripMenuItem.Text = "Brushsize";
             // 
+            // multiSelectToolStripMenuItem
+            // 
+            this.multiSelectToolStripMenuItem.Checked = true;
+            this.multiSelectToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.multiSelectToolStripMenuItem.Name = "multiSelectToolStripMenuItem";
+            this.multiSelectToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.multiSelectToolStripMenuItem.Text = "Multi Select";
+            this.multiSelectToolStripMenuItem.Click += new System.EventHandler(this.multiSelectToolStripMenuItem_Click);
+            // 
             // x1ToolStripMenuItem
             // 
-            this.x1ToolStripMenuItem.Checked = true;
-            this.x1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.x1ToolStripMenuItem.Name = "x1ToolStripMenuItem";
             this.x1ToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.x1ToolStripMenuItem.Text = "1x1 same";
@@ -929,26 +939,19 @@
             this.x2NextToolStripMenuItem.Text = "2x2 next (pseudo 16x16)";
             this.x2NextToolStripMenuItem.Click += new System.EventHandler(this.x2NextToolStripMenuItem_Click);
             // 
-            // cloneFromTilesetToolStripMenuItem
-            // 
-            this.cloneFromTilesetToolStripMenuItem.Name = "cloneFromTilesetToolStripMenuItem";
-            this.cloneFromTilesetToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.cloneFromTilesetToolStripMenuItem.Text = "Clone from Tileset";
-            this.cloneFromTilesetToolStripMenuItem.Click += new System.EventHandler(this.cloneFromTilesetToolStripMenuItem_Click);
-            // 
-            // cloneFromMapToolStripMenuItem
-            // 
-            this.cloneFromMapToolStripMenuItem.Name = "cloneFromMapToolStripMenuItem";
-            this.cloneFromMapToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
-            this.cloneFromMapToolStripMenuItem.Text = "Clone from Map";
-            this.cloneFromMapToolStripMenuItem.Click += new System.EventHandler(this.cloneFromMapToolStripMenuItem_Click);
-            // 
             // fillScreenToolStripMenuItem
             // 
             this.fillScreenToolStripMenuItem.Name = "fillScreenToolStripMenuItem";
             this.fillScreenToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.fillScreenToolStripMenuItem.Text = "Fill Screen";
             this.fillScreenToolStripMenuItem.Click += new System.EventHandler(this.fillScreenToolStripMenuItem_Click);
+            // 
+            // mapEditToolStripMenuItem
+            // 
+            this.mapEditToolStripMenuItem.Name = "mapEditToolStripMenuItem";
+            this.mapEditToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.mapEditToolStripMenuItem.Text = "Map Edit Only";
+            this.mapEditToolStripMenuItem.Click += new System.EventHandler(this.mapEditToolStripMenuItem_Click);
             // 
             // importImageToolStripMenuItem
             // 
@@ -1178,7 +1181,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.2";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.5 (build 2)";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
@@ -1283,8 +1286,6 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.ToolStripMenuItem loadAMapToSelectedXYToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem cloneFromTilesetToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem cloneFromMapToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem fillTopRowWithColorsToolStripMenuItem;
         private System.Windows.Forms.TrackBar trackBar1;
         private System.Windows.Forms.TrackBar trackBar2;
@@ -1306,6 +1307,8 @@
         private System.Windows.Forms.ToolStripMenuItem forceMapsToEvenValuesToolStripMenuItem;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ToolStripMenuItem zoomIntoQuadrantToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem multiSelectToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mapEditToolStripMenuItem;
     }
 }
 

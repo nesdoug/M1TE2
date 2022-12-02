@@ -378,6 +378,7 @@ namespace M1TE2
                 {
                     color = Form1.pal_x & 0x0f;
                 }
+                if (Tiles.Tile_Arrays[index] == color) return; // ! only update if different
                 Tiles.Tile_Arrays[index] = color;
 
                 //update tileset picture too
@@ -509,8 +510,71 @@ namespace M1TE2
             f.update_tilemap();
         }
 
+
+        public void F2_Key_ME(KeyEventArgs e)
+        { // brush in map edit only mode
+            Form1 f = (this.Owner as Form1);
+
+            if (e.KeyCode == Keys.H) // h flip
+            {
+                f.Checkpoint();
+                f.ME_flip_h();
+            }
+            else if (e.KeyCode == Keys.Y) // v flip
+            {
+                f.Checkpoint();
+                f.ME_flip_v();
+
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                f.Checkpoint();
+                f.ME_delete();
+            }
+            else if (e.KeyCode == Keys.C)
+            {
+                f.ME_copy();
+            }
+            else if (e.KeyCode == Keys.X)
+            {
+                f.ME_copy();
+                f.Checkpoint();
+                f.ME_delete();
+            }
+            else if (e.KeyCode == Keys.V)
+            {
+                f.Checkpoint();
+                f.ME_paste();
+            }
+            else if (e.KeyCode == Keys.F)
+            {
+                f.Checkpoint();
+                f.ME_fill();
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                Form1.ME_x1 = 0;
+                Form1.ME_y1 = 0;
+                Form1.ME_x2 = 32;
+                Form1.ME_y2 = Form1.map_height;
+            }
+            else if (e.KeyCode == Keys.Z)
+            {
+                f.Do_Undo();
+            }
+            // skipped palette stuff
+
+            common_update();
+        }
+
         private void Form2_KeyDown(object sender, KeyEventArgs e)
         {
+            if(Form1.brushsize == Form1.BRUSH_MAP_ED)
+            {
+                F2_Key_ME(e);
+                return;
+            }
+            
             Form1 f = (this.Owner as Form1);
 
             if (e.KeyCode == Keys.Left)
@@ -539,27 +603,39 @@ namespace M1TE2
             }
             else if (e.KeyCode == Keys.NumPad2) // down
             {
-                if (Form1.tile_y < 15) Form1.tile_y++;
-                Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
-                common_update();
+                if(Form1.brushsize != Form1.BRUSH_MULTI)
+                {
+                    if (Form1.tile_y < 15) Form1.tile_y++;
+                    Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
+                    common_update();
+                }
             }
             else if (e.KeyCode == Keys.NumPad4) // left
             {
-                if (Form1.tile_x > 0) Form1.tile_x--;
-                Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
-                common_update();
+                if (Form1.brushsize != Form1.BRUSH_MULTI)
+                {
+                    if (Form1.tile_x > 0) Form1.tile_x--;
+                    Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
+                    common_update();
+                }
             }
             else if (e.KeyCode == Keys.NumPad6) // right
             {
-                if (Form1.tile_x < 15) Form1.tile_x++;
-                Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
-                common_update();
+                if (Form1.brushsize != Form1.BRUSH_MULTI)
+                {
+                    if (Form1.tile_x < 15) Form1.tile_x++;
+                    Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
+                    common_update();
+                }
             }
             else if (e.KeyCode == Keys.NumPad8) // up
             {
-                if (Form1.tile_y > 0) Form1.tile_y--;
-                Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
-                common_update();
+                if (Form1.brushsize != Form1.BRUSH_MULTI)
+                {
+                    if (Form1.tile_y > 0) Form1.tile_y--;
+                    Form1.tile_num = (Form1.tile_y * 16) + Form1.tile_x;
+                    common_update();
+                }
             }
             else if (e.KeyCode == Keys.H)
             {
@@ -567,7 +643,7 @@ namespace M1TE2
                 Tiles.tile_h_flip();
                 common_update();
             }
-            else if (e.KeyCode == Keys.V)
+            else if (e.KeyCode == Keys.Y)
             {
                 f.Checkpoint();
                 Tiles.tile_v_flip();
@@ -596,7 +672,14 @@ namespace M1TE2
                 Tiles.tile_copy();
                 common_update();
             }
-            else if (e.KeyCode == Keys.P)
+            else if (e.KeyCode == Keys.X)
+            {
+                Tiles.tile_copy();
+                f.Checkpoint();
+                Tiles.tile_delete();
+                common_update();
+            }
+            else if (e.KeyCode == Keys.V)
             {
                 f.Checkpoint();
                 Tiles.tile_paste();
@@ -608,6 +691,12 @@ namespace M1TE2
                 Tiles.tile_fill();
                 common_update();
             }
+            else if (e.KeyCode == Keys.A)
+            {
+                Tiles.select_all();
+                common_update();
+            }
+
             else if (e.KeyCode == Keys.D1) // number buttons
             {
                 f.set1_change(); // change the tileset

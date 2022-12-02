@@ -66,7 +66,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(121, 13);
             this.label2.TabIndex = 2;
-            this.label2.Text = "rotate - R, L,    flip - H, V";
+            this.label2.Text = "rotate - R, L,    flip - H, Y";
             // 
             // label3
             // 
@@ -82,18 +82,18 @@
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(13, 214);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(100, 13);
+            this.label4.Size = new System.Drawing.Size(119, 13);
             this.label4.TabIndex = 4;
-            this.label4.Text = "copy - C,   paste - P";
+            this.label4.Text = "copy-C,  cut-X,  paste-V";
             // 
             // label5
             // 
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(13, 236);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(123, 13);
+            this.label5.Size = new System.Drawing.Size(64, 13);
             this.label5.TabIndex = 5;
-            this.label5.Text = "next tile, numpad 2,4,6,8";
+            this.label5.Text = "select all - A";
             // 
             // Form2
             // 

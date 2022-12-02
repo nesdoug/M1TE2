@@ -1,5 +1,5 @@
-M1TE ver 3.2 (SNES Mode 1 Tile Editor) 
-June 1, 2022
+M1TE ver 3.5 (SNES Mode 1 Tile Editor) 
+Dec 2, 2022
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -72,6 +72,23 @@ version changes
       or the bottom most tile in a set)
     - tile editor can view a full 16x16 tile
     - 16x16 grid also highlights the tileset
+3.3 - added brushes "multi select" and "map edit"
+      (replaces clone brushes, now removed)
+    - command keys x=cut and a=select all added.
+    - change v=paste and y=vertical flip
+    - slight change to "best color" formula
+      (should prefer a color closer to the original hue
+      rather than a wrong color of the same brightness)
+    - minor bug fixes
+    - added a checkbox on import options, auto-
+      put imported tiles on map (now off by default)
+    - importing a 128x128 image (or smaller)
+      now only blanks the needed tiles,
+      and starts at the selected tile
+    - allow small images to be imported as palettes
+      (as small as 2x1) to allow 16x1 images as a palette
+3.5 - bumped up version # to show that
+      there were lots of changes 
 
 
 Note, the RLE is a special compression format that I wrote, 
@@ -94,7 +111,6 @@ will appear zoomed out compared to 8x8 mode. Also, one
 of the brushes won't work right (the 2x2 pseudo 16x16) 
 so it has been disabled in this mode.
 "Remove unused tile" will work differently than 8x8 mode.
-Clone from tiles will skip odd # indexes.
 *this mode affects all layers. There is no way to mix
 and match here, even though you can do that on the SNES.
 If you need that, you will have to create 2 projects. One
@@ -107,7 +123,8 @@ have your 16x16 tiles aligned to the even values.
 -Tilesize/Zoom Into Quadrant-- in 16x16 mode, since the
 map is zoomed out from what you expect, this option
 will give a quick zoomed in view, to the selected map
-quadrant. Please, rt click on the map to exit this mode
+quadrant (to show what your actual screen will be).
+Please, rt click on the map to exit this mode
 before doing anything else, which will be
 buggy (or broken) with maps stuck in Zoomed In Mode.
 
@@ -154,8 +171,8 @@ Tilesets
 4bpp are for layers 1 and 2. 2bpp is for layer 3.
 
 Left/Right click to open an editing box.
-Numberpad 2,4,6,8 to move to adjacent tile.
-C - copy, P - paste.
+Numberpad 2,4,6,8 to move to adjacent tile. (some brushes only)
+(see the key commands below)
 1,2,3,4,5,6,7,8 - to change the tileset.
 
 *note - 2bpp SNES tilesets are NOT like NES. They are like Gameboy, GB,
@@ -173,12 +190,14 @@ Numberpad 2,4,6,8 to move to adjacent tile.
 Arrow keys to shift the image.
 F - fills a tile with selected color
 H - flip horizontal (notice the symmetric shape of the letter W)
-V - flip vertical (notice the symmetric shape of the letter E)
+Y - flip vertical (notice the symmetric shape of the letter E)
 R - rotate clockwise
 L - rotate counter clockwise
 Delete - fills with color 0 (transparent)
 C - copy
-P - paste
+X - cut
+V - paste
+A - select all (only works for some brushes)
 
 
 
@@ -219,14 +238,25 @@ larger areas of the screen with the same tile.
 of the selected tile in a 2x2 block on the screen. This might be
 useful if the tileset has tiles arranged in 16x16 blocks.
 
-Clone from Tiles and Clone from Map. Right click to select the
-starting tile. Click and drag on the map will place tiles,
-copying from the source. No wrap around allowed.
+(Clone from Tiles and Clone from Map. Removed/Replaced)
 
 Fill the Map - click on a map to fill it with the selected tile.
 If "palette only" is checked, it will change the palette of the map.
 
-HELPFUL TIP! - Use Number pad 2,4,6,8 to switch to adjacent tile.
+Multi Tile Select (this is what you should be using mostly) - 
+you can now select multiple tiles at once, and flip/shift/copy/etc
+and place them on the map all as a block. But, the code to update 
+the map is slower, so if you are only placing a single tile at a 
+time, it will be smoother using the 1x1 brush.
+
+Map Edit Only - You can now select multiple tiles on the map view
+with this brush, and copy/cut/paste/fill/delete and flip them
+all at once. 
+(some of the checkboxes are disabled with this brush/mode.
+Use key commands to flip - h and y)
+Tip - Combine fill (f) with "palette only" to change 
+the palette of the selected area.
+You can't rotate or pixel shift in this mode.
 
 
 
@@ -282,6 +312,8 @@ This will be a 3 step process. First, select options and set a dither level.
 Then, get the palette from the image (or make your own palette).
 Finally, get the tiles/map from the image.
 -CAUTION, it will erase the entire tileset and the current map
+ (only if it is larger than 128x128, a small image will only
+  delete the needed area)
 -if a file has an indexed palette, it will not read it... it always
 auto-generates an optimized palette
 -if you have BG View 1 or 2, it will generate a 4bpp tileset and 16 colors
@@ -313,12 +345,7 @@ Native .M1 file format details...
 
 ///////////////////////////////////////////////
 TODO-
--tile edit box could be 16x16 in 16x16 mode.
- (then the copy, paste, flip, etc functions
- would work for a 16x16 block)
--the "force maps to even values" function
- might need to be changed to be persistent
- (not sure what I want to do here) 
+-color replace tool
 ///////////////////////////////////////////////
 
 

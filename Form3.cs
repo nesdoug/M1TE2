@@ -46,6 +46,14 @@ namespace M1TE2
             {
                 checkBox2.Checked = true;
             }
+            if (Form1.f3_cb3 == false)
+            {
+                checkBox3.Checked = false;
+            }
+            else
+            {
+                checkBox3.Checked = true;
+            }
             skipTextChange = false;
         }
 
@@ -91,6 +99,18 @@ namespace M1TE2
             textBox1.Text = str;
             Form1.dither_factor = value;
             skipTextChange = false;
+        }
+
+        private void checkBox3_Click(object sender, EventArgs e)
+        {
+            if (checkBox3.Checked == false)
+            {
+                Form1.f3_cb3 = false;
+            }
+            else
+            {
+                Form1.f3_cb3 = true;
+            }
         }
     }
 }

@@ -52,14 +52,18 @@ namespace M1TE2
         public static int map_view, active_map_x, active_map_y, active_map_index;
         public static int map_height = 28;
         public static int last_tile_x, last_tile_y;
-        public static int brushsize;
+        
         public const int BRUSH1x1 = 0;
         public const int BRUSH3x3 = 1;
         public const int BRUSH5x5 = 2;
         public const int BRUSHNEXT = 3;
-        public const int BRUSH_CLONE_T = 4;
-        public const int BRUSH_CLONE_M = 5;
+        //public const int BRUSH_CLONE_T = 4;
+        //public const int BRUSH_CLONE_M = 5;
         public const int BRUSH_FILL = 6;
+        public const int BRUSH_MULTI = 7;
+        public const int BRUSH_MAP_ED = 8;
+        public static int brushsize = BRUSH_MULTI;
+
         public static int pal_r_copy, pal_g_copy, pal_b_copy;
         public static byte[] rle_array = new byte[65536];
         public static int rle_index, rle_index2, rle_count;
@@ -82,7 +86,10 @@ namespace M1TE2
         public static int dither_factor = 0;
         public static int dither_adjust = 0;
         public static double dither_db = 0.0;
-        public static bool f3_cb1 = false, f3_cb2 = false;
+        // import image as tiles options
+        public static bool f3_cb1 = false; // use existing 0th color
+        public static bool f3_cb2 = false; // remove duplicates
+        public static bool f3_cb3 = false; // put imported tiles on map
         public static bool flip_h = false, flip_v = false;
 
         public static bool undo_ready = false;
@@ -92,6 +99,27 @@ namespace M1TE2
         public static bool zoom_Q_flag = false;
 
 
+        //public static bool BIG_EDIT_MODE = true;
+        // use brushsize == BRUSH_MULTI
+        public static int BE_x1 = 0; // in tiles 
+        public static int BE_x2 = 1; // x1,y1 = top left           
+        public static int BE_y1 = 0; // x2,y2 = bottom right
+        public static int BE_y2 = 1;
+        public static int BE_x_cur, BE_y_cur; // do we need to redraw the tileset box?
+
+        public static int[] Flipping_Array = new int[256];
+        //map edit, EDIT MAP ONLY brush...
+        public static int ME_x1 = 0; // in tiles 
+        public static int ME_x2 = 1; // x1,y1 = top left           
+        public static int ME_y1 = 0; // x2,y2 = bottom right
+        public static int ME_y2 = 1;
+        public static int ME_x_cur, ME_y_cur; // do we need to redraw the tileset box?
+        // copy paste
+        public static bool ME_has_copied = false;
+        public static int ME_x1_c = 0; // in tiles 
+        public static int ME_x2_c = 1; // x1,y1 = top left           
+        public static int ME_y1_c = 0; // x2,y2 = bottom right
+        public static int ME_y2_c = 1;
 
         public readonly int[,] BAYER_MATRIX =
         {
@@ -177,12 +205,14 @@ namespace M1TE2
             { // copy tilesets
                 TilesU.Tile_Arrays[i] = Tiles.Tile_Arrays[i];
             }
+
+            // note, palette isn't saved for undo
         }
 
         public void Do_Undo()
         {
             if (undo_ready == false) return;
-
+            
             for (int i = 0; i < 3072; ++i)
             { // restore maps
                 Maps.tile[i] = MapsU.tile[i];
@@ -195,6 +225,13 @@ namespace M1TE2
             for (int i = 0; i < 131072; ++i)
             { // restore tilesets
                 Tiles.Tile_Arrays[i] = TilesU.Tile_Arrays[i];
+            }
+
+            if (map_view > 2) // fix crash if in preview mode
+            {
+                common_update2();
+                undo_ready = false;
+                return;
             }
 
             active_map_index = active_map_x + (active_map_y * 32) + (32 * 32 * map_view);
@@ -425,18 +462,25 @@ namespace M1TE2
                         }
                     }
                 }
-                // draw box around current selection
-                int x2 = (active_map_x * 16);
-                //if (x2 >= 496) x2 = 495;
-                if (active_map_y >= map_height) active_map_y = map_height - 1;
-                int y2 = (active_map_y * 16);
-                //if (y2 >= 496) y2 = 495;
-                for (int i = 0; i < 16; i++)
+                if(brushsize == BRUSH_MAP_ED)
                 {
-                    temp_bmp2.SetPixel(x2 + i, y2, Color.White);
-                    temp_bmp2.SetPixel(x2, y2 + i, Color.White);
-                    temp_bmp2.SetPixel(x2 + i, y2 + 15, Color.White);
-                    temp_bmp2.SetPixel(x2 + 15, y2 + i, Color.White);
+                    draw_box_ME();
+                }
+                else
+                {
+                    // draw box around current selection
+                    int x2 = (active_map_x * 16);
+                    //if (x2 >= 496) x2 = 495;
+                    if (active_map_y >= map_height) active_map_y = map_height - 1;
+                    int y2 = (active_map_y * 16);
+                    //if (y2 >= 496) y2 = 495;
+                    for (int i = 0; i < 16; i++)
+                    {
+                        temp_bmp2.SetPixel(x2 + i, y2, Color.White);
+                        temp_bmp2.SetPixel(x2, y2 + i, Color.White);
+                        temp_bmp2.SetPixel(x2 + i, y2 + 15, Color.White);
+                        temp_bmp2.SetPixel(x2 + 15, y2 + i, Color.White);
+                    }
                 }
             }
 
@@ -446,6 +490,28 @@ namespace M1TE2
         // END UPDATE TILEMAP 8x8
 
 
+        public void draw_box_ME()
+        { // map edit only mode, draw a box the size of the edit area
+            //temp_bmp2.SetPixel(x2 + i, y2, Color.White);
+            // 16 pixels per thing
+            int actual_y1 = ME_y1 * 16;
+            int actual_y2 = ME_y2 * 16 - 1;
+            if (actual_y2 >= 512) actual_y2 = 511;
+            int actual_x1 = ME_x1 * 16;
+            int actual_x2 = ME_x2 * 16 - 1;
+            if (actual_x2 >= 512) actual_x2 = 511;
+            for (int y1 = actual_y1; y1 < actual_y2; y1++)
+            { // vert lines
+                temp_bmp2.SetPixel(actual_x1, y1, Color.White);
+                temp_bmp2.SetPixel(actual_x2, y1, Color.White);
+            }
+            for (int x1 = actual_x1; x1 < actual_x2; x1++)
+            { // horz lines
+                temp_bmp2.SetPixel(x1, actual_y1, Color.White);
+                temp_bmp2.SetPixel(x1, actual_y2, Color.White);
+            }
+            temp_bmp2.SetPixel(actual_x2, actual_y2, Color.White);
+        }
 
 
         public void update_tilemap16x16()
@@ -620,19 +686,27 @@ namespace M1TE2
                         }
                     }
                 }
-                // draw box around current selection
-                int x2 = (active_map_x * 16);
-                //if (x2 >= 496) x2 = 495;
-                if (active_map_y >= map_height) active_map_y = map_height - 1;
-                int y2 = (active_map_y * 16);
-                //if (y2 >= 496) y2 = 495;
-                for (int i = 0; i < 16; i++)
+                if (brushsize == BRUSH_MAP_ED)
                 {
-                    temp_bmp2.SetPixel(x2 + i, y2, Color.White);
-                    temp_bmp2.SetPixel(x2, y2 + i, Color.White);
-                    temp_bmp2.SetPixel(x2 + i, y2 + 15, Color.White);
-                    temp_bmp2.SetPixel(x2 + 15, y2 + i, Color.White);
+                    draw_box_ME();
                 }
+                else
+                {
+                    // draw box around current selection
+                    int x2 = (active_map_x * 16);
+                    //if (x2 >= 496) x2 = 495;
+                    if (active_map_y >= map_height) active_map_y = map_height - 1;
+                    int y2 = (active_map_y * 16);
+                    //if (y2 >= 496) y2 = 495;
+                    for (int i = 0; i < 16; i++)
+                    {
+                        temp_bmp2.SetPixel(x2 + i, y2, Color.White);
+                        temp_bmp2.SetPixel(x2, y2 + i, Color.White);
+                        temp_bmp2.SetPixel(x2 + i, y2 + 15, Color.White);
+                        temp_bmp2.SetPixel(x2 + 15, y2 + i, Color.White);
+                    }
+                }
+                
             }
 
             if(zoom_Q_flag == true)
@@ -1404,49 +1478,79 @@ namespace M1TE2
 
             //put a white box around the selected tile
             int pos_x = 0; int pos_y = 0;
-            if((tilesize == TILE_8X8) && (brushsize != BRUSHNEXT))
+            if(brushsize == BRUSH_MULTI) // supersedes all other things
             {
-                for (int i = 0; i < 16; i++)
+                pos_x = (BE_x1 * 16) - 1;
+                if (pos_x < 0) pos_x = 0;
+                int pos_x2 = (BE_x2 * 16) - 1;
+                if (pos_x2 > 255) pos_x2 = 255;
+                int boxsizeX = pos_x2 - pos_x;
+                pos_y = (BE_y1 * 16) - 1;
+                if (pos_y < 0) pos_y = 0;
+                int pos_y2 = (BE_y2 * 16) - 1;
+                if (pos_y2 > 255) pos_y2 = 255;
+                int boxsizeY = pos_y2 - pos_y;
+                boxsizeY++; // 1 more
+
+                for (int i = 0; i < boxsizeY; i++)
                 {
-                    pos_y = (tile_y * 16) - 1; // it's doing a weird off by 1 thing
-                    if (pos_y < 0) pos_y = 0; // so have to adjust by 1, and not == -1
-                    pos_x = (tile_x * 16) - 1;
-                    if (pos_x < 0) pos_x = 0;
-                    temp_bmp.SetPixel(pos_x + i, pos_y, Color.White);
-                    temp_bmp.SetPixel(pos_x, pos_y + i, Color.White);
-                    temp_bmp.SetPixel(pos_x + i, pos_y + 16, Color.White);
-                    temp_bmp.SetPixel(pos_x + 16, pos_y + i, Color.White);
+                    if (pos_y + i >= 256) break;
+                    temp_bmp.SetPixel(pos_x, pos_y + i, Color.White); // left
+                    temp_bmp.SetPixel(pos_x2, pos_y + i, Color.White); // right
+                }
+                for (int i = 0; i < boxsizeX; i++)
+                {
+                    if (pos_x + i >= 256) break;
+                    temp_bmp.SetPixel(pos_x + i, pos_y, Color.White); // top
+                    temp_bmp.SetPixel(pos_x + i, pos_y2, Color.White); // bottom
                 }
             }
-            else // 16x16 tiles, draw a bigger box
+            else
             {
-                for (int i = 0; i < 32; i++)
+                if ((tilesize == TILE_8X8) && (brushsize != BRUSHNEXT))
                 {
                     pos_y = (tile_y * 16) - 1; // it's doing a weird off by 1 thing
                     if (pos_y < 0) pos_y = 0; // so have to adjust by 1, and not == -1
                     pos_x = (tile_x * 16) - 1;
                     if (pos_x < 0) pos_x = 0;
-                    if((pos_x + i) < 256)
+                    for (int i = 0; i < 16; i++)
                     {
-                        temp_bmp.SetPixel(pos_x + i, pos_y, Color.White); // top
+                        temp_bmp.SetPixel(pos_x + i, pos_y, Color.White);
+                        temp_bmp.SetPixel(pos_x, pos_y + i, Color.White);
+                        temp_bmp.SetPixel(pos_x + i, pos_y + 16, Color.White);
+                        temp_bmp.SetPixel(pos_x + 16, pos_y + i, Color.White);
                     }
-                    if ((pos_y + i) < 256)
+                    temp_bmp.SetPixel(pos_x + 16, pos_y + 16, Color.White);
+                }
+                else // 16x16 tiles, draw a bigger box
+                {
+                    pos_y = (tile_y * 16) - 1; // it's doing a weird off by 1 thing
+                    if (pos_y < 0) pos_y = 0; // so have to adjust by 1, and not == -1
+                    pos_x = (tile_x * 16) - 1;
+                    if (pos_x < 0) pos_x = 0;
+                    for (int i = 0; i < 32; i++)
                     {
-                        temp_bmp.SetPixel(pos_x, pos_y + i, Color.White); // left
+                        if ((pos_x + i) < 256)
+                        {
+                            temp_bmp.SetPixel(pos_x + i, pos_y, Color.White); // top
+                        }
+                        if ((pos_y + i) < 256)
+                        {
+                            temp_bmp.SetPixel(pos_x, pos_y + i, Color.White); // left
+                        }
+                        if (((pos_x + i) < 256) && ((pos_y + 32) < 256))
+                        {
+                            temp_bmp.SetPixel(pos_x + i, pos_y + 32, Color.White); // right
+                        }
+                        if (((pos_x + 32) < 256) && ((pos_y + i) < 256))
+                        {
+                            temp_bmp.SetPixel(pos_x + 32, pos_y + i, Color.White); // bottom
+                        }
                     }
-                    if (((pos_x + i) < 256) && ((pos_y + 32) < 256))
-                    {
-                        temp_bmp.SetPixel(pos_x + i, pos_y + 32, Color.White); // right
-                    }
-                    if (((pos_x + 32) < 256) && ((pos_y + i) < 256))
-                    {
-                        temp_bmp.SetPixel(pos_x + 32, pos_y + i, Color.White); // bottom
-                    }
-                    
+                    temp_bmp.SetPixel(pos_x + 32, pos_y + 32, Color.White);
                 }
             }
             
-
 
             pictureBox2.Image = temp_bmp;
             pictureBox2.Refresh();
@@ -1473,7 +1577,8 @@ namespace M1TE2
                 MessageBox.Show("Editing is disabled in Preview Mode.");
                 return;
             }
-
+            if (brushsize == BRUSH_MULTI) return;
+            
             //change the label to tile number, in hex
             tile_x = 0; tile_y = 0; tile_num = 0; //globals
 
@@ -1521,11 +1626,174 @@ namespace M1TE2
 
 
 
+        private void make_flippin_array(int width, int height)
+        {
+            // assumes width and height both 0-15
+            int value = 0;
+            int index = 0;
+            int width2 = width - 1;
+            int height2 = height - 1;
+            //Flipping_Array
+            if(checkBox5.Checked == false)
+            { // not H flip
+                if(checkBox6.Checked == false)
+                { // not V flip
+                    for(int y1 = 0; y1 < height; y1++)
+                    {
+                        for(int x1 = 0; x1 < width; x1++)
+                        {
+                            value = (y1 * 16) + x1;
+                            Flipping_Array[index] = value;
+                            index++;
+                        }
+                    }
+                }
+                else
+                { // V flip
+                    for (int y1 = 0; y1 < height; y1++)
+                    {
+                        for (int x1 = 0; x1 < width; x1++)
+                        {
+                            value = ((height2 - y1) * 16) + x1;
+                            Flipping_Array[index] = value;
+                            index++;
+                        }
+                    }
+                }
+            }
+            else // H flip
+            {
+                if (checkBox6.Checked == false)
+                { // not V flip
+                    for (int y1 = 0; y1 < height; y1++)
+                    {
+                        for (int x1 = 0; x1 < width; x1++)
+                        {
+                            value = (y1 * 16) + (width2 - x1);
+                            Flipping_Array[index] = value;
+                            index++;
+                        }
+                    }
+                }
+                else
+                { // V flip
+                    for (int y1 = 0; y1 < height; y1++)
+                    {
+                        for (int x1 = 0; x1 < width; x1++)
+                        {
+                            value = ((height2 - y1) * 16) + (width2 - x1);
+                            Flipping_Array[index] = value;
+                            index++;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        private void picbox1_sub_multi()
+        {
+            // multi tile select mode (brushsize = BRUSH_MULTI)
+            // place all selected tiles, then call the update_tilemap
+            // even though it is slower
+
+            int z_offset = map_view * 32 * 32;
+            //int offset, temp_tile, temp_pal;
+            // which tile is selected
+            int temp_set = tile_set & 3; //0-3
+            int tile_num2 = tile_x + (tile_y * 16) + (256 * temp_set); // 0-1023
+            //BE_x1, BE_x2, BE_y1, BE_y2, in tiles
+            int BE_xSize = BE_x2 - BE_x1;
+            int BE_ySize = BE_y2 - BE_y1;
+            
+            make_flippin_array(BE_xSize, BE_ySize);
+
+            int flip_x_status = 0;
+            int flip_y_status = 0;
+            if (checkBox5.Checked == true) flip_x_status = 1;
+            if (checkBox6.Checked == true) flip_y_status = 1;
+            checkBox1.Checked = checkBox5.Checked;
+            checkBox2.Checked = checkBox6.Checked;
+            int pal_value = 0;
+            if (map_view == 2) // 2bpp mode
+            {
+                pal_value = (pal_y * 4) + (pal_x >> 2); // 2bpp mode
+            }
+            else
+            {
+                pal_value = pal_y;
+            }
+            textBox5.Text = pal_value.ToString();
+
+            // place the tiles on the map
+            if(tilesize == TILE_8X8)
+            {
+                for (int y1 = 0; y1 < BE_ySize; y1++)
+                {
+                    int actual_map_y = active_map_y + y1;
+                    if (actual_map_y > 31) break;
+                    for (int x1 = 0; x1 < BE_xSize; x1++)
+                    {
+                        int actual_map_x = active_map_x + x1;
+                        if (actual_map_x > 31) break;
+                        int flip_offset = (y1 * BE_xSize) + x1;
+                        int actual_tile_num = Flipping_Array[flip_offset] + tile_num2;
+                        if (actual_tile_num > 1023) break;
+                        int actual_map_num = (actual_map_y * 32) + actual_map_x + z_offset;
+
+                        if (checkBox7.Checked == false) // palette only
+                        {
+                            Maps.tile[actual_map_num] = actual_tile_num;
+                            Maps.h_flip[actual_map_num] = flip_x_status;
+                            Maps.v_flip[actual_map_num] = flip_y_status;
+                            //Maps.priority[actual_map_num] = 0;
+                        }
+
+                        Maps.palette[actual_map_num] = pal_value;
+                    }
+                }
+            }
+            else // TILE_16X16
+            {
+                for (int y1 = 0; y1 < BE_ySize; y1+=2) // +2
+                {
+                    int actual_map_y = active_map_y + (y1 / 2);
+                    if (actual_map_y > 31) break;
+                    for (int x1 = 0; x1 < BE_xSize; x1+=2) // +2
+                    {
+                        int actual_map_x = active_map_x + (x1 / 2);
+                        if (actual_map_x > 31) break;
+                        int flip_offset = (y1 * BE_xSize) + x1;
+                        int actual_tile_num = Flipping_Array[flip_offset] + tile_num2;
+                        if (actual_tile_num > 1023) break;
+                        int actual_map_num = (actual_map_y * 32) + actual_map_x + z_offset;
+
+                        if (checkBox7.Checked == false) // palette only
+                        {
+                            Maps.tile[actual_map_num] = actual_tile_num;
+                            Maps.h_flip[actual_map_num] = flip_x_status;
+                            Maps.v_flip[actual_map_num] = flip_y_status;
+                            //Maps.priority[actual_map_num] = 0;
+                        }
+
+                        Maps.palette[actual_map_num] = pal_value;
+                    }
+                }
+            }
+            
+
+            // just redraw the entire map. It's a bit slow.
+            update_tilemap();
+        }
+
 
         // this was to speed up map changes, so we don't have to draw the
         // entire map every click
+        // we just draw the tile we need
         private void picbox1_sub() // place a tile on the map
         {
+            // shouldn't be here if brush = MULTI
+
             // apply the tile now
             int temp_y, temp_x, start_x, loop_x, loop_y;
             int z = map_view * 32 * 32;
@@ -1533,7 +1801,7 @@ namespace M1TE2
             int next_count = 0;
             int[] next_tiles = new int[5]; // actually 4
 
-            // which tile is selected on right.
+            // which tile is selected
             int temp_set = tile_set & 3; //0-3
             int tile_num2 = tile_x + (tile_y * 16) + (256 * temp_set); // 0-1023
 
@@ -1601,7 +1869,7 @@ namespace M1TE2
 
                 tile_num2 = next_tiles[0];
             }
-            else if ((brushsize == BRUSH_CLONE_T) || (brushsize == BRUSH_CLONE_M))
+            /*else if ((brushsize == BRUSH_CLONE_T) || (brushsize == BRUSH_CLONE_M))
             {
 
                 loop_x = 1;
@@ -1653,7 +1921,7 @@ namespace M1TE2
                     Maps.palette[active_map_index] = Maps.palette[active_map_index2];
                     Maps.h_flip[active_map_index] = Maps.h_flip[active_map_index2];
                     Maps.v_flip[active_map_index] = Maps.v_flip[active_map_index2];
-                    Maps.priority[active_map_index] = Maps.priority[active_map_index2];
+                    //Maps.priority[active_map_index] = Maps.priority[active_map_index2];
 
 
 
@@ -1751,9 +2019,11 @@ namespace M1TE2
 
                     return; // must return when done.
                 }
-            }
-            else // brush = fill screen
-            {
+
+                // end of CLONE BRUSHES
+            }*/
+            else // brush = fill screen, BRUSH_FILL
+            { 
                 start_x = temp_x = 0;
                 temp_y = 0;
                 loop_x = 32;
@@ -1762,56 +2032,45 @@ namespace M1TE2
 
 
 
-
+            int flip_x_status = 0;
+            int flip_y_status = 0;
+            if (checkBox5.Checked == true) flip_x_status = 1;
+            if (checkBox6.Checked == true) flip_y_status = 1;
+            checkBox1.Checked = checkBox5.Checked;
+            checkBox2.Checked = checkBox6.Checked;
+            int pal_value = 0;
+            if (map_view == 2) // 2bpp mode
+            {
+                pal_value = (pal_y * 4) + (pal_x >> 2); // 2bpp mode
+            }
+            else
+            {
+                pal_value = pal_y;
+            }
+            textBox5.Text = pal_value.ToString();
 
             // nested loop of tile changes, per brush size.
             for (int yy = 0; yy < loop_y; yy++)
             {
                 for (int xx = 0; xx < loop_x; xx++)
                 {
-                    //tile change temp_y < map_height
+                    // tile change temp_y < map_height
                     if ((temp_y >= 0) && (temp_x >= 0) &&
                         (temp_y < map_height) && (temp_x < 32))
                     {
                         active_map_index = temp_x + (temp_y * 32) + (32 * 32 * map_view);
 
                         // always apply the palette
-                        int temp_val = 0;
-                        if (map_view == 2) // 2bpp mode
-                        {
-                            temp_val = (pal_y * 4) + (pal_x >> 2); // 2bpp mode
-                            Maps.palette[active_map_index] = temp_val;
-                            textBox5.Text = temp_val.ToString();
-                        }
-                        else
-                        {
-                            Maps.palette[active_map_index] = pal_y; // 4bpp mode
-                            textBox5.Text = pal_y.ToString();
-                        }
+                        
+                        Maps.palette[active_map_index] = pal_value;
 
                         if (checkBox7.Checked == false) // apply only palette = false
                         {
                             Maps.tile[active_map_index] = tile_num2;
-                            if (checkBox5.Checked == false)
-                            {
-                                Maps.h_flip[active_map_index] = 0;
-                                checkBox1.Checked = false;
-                            }
-                            else {
-                                Maps.h_flip[active_map_index] = 1;
-                                checkBox1.Checked = true;
-                            }
-                            if (checkBox6.Checked == false)
-                            {
-                                Maps.v_flip[active_map_index] = 0;
-                                checkBox2.Checked = false;
-                            }
-                            else
-                            {
-                                Maps.v_flip[active_map_index] = 1;
-                                checkBox2.Checked = true;
-                            }
-                            //Maps.priority[active_map_index] = 0; // not used
+                            Maps.h_flip[active_map_index] = flip_x_status;
+                            Maps.v_flip[active_map_index] = flip_y_status;
+                            // other attributes moved above
+                            // Maps.priority[active_map_index] = 0; // not used
                         }
 
 
@@ -1937,7 +2196,7 @@ namespace M1TE2
                 return;
             }
 
-            if (brushsize == BRUSH_CLONE_M)
+            /*if (brushsize == BRUSH_CLONE_M)
             {
                 var mouseEventArgs = e as MouseEventArgs;
                 if (mouseEventArgs == null) return;
@@ -1948,8 +2207,15 @@ namespace M1TE2
                     label12.Text = "X = " + map_clone_x.ToString(); // change the numbers at the top
                     label13.Text = "Y = " + map_clone_y.ToString();
                     update_palette();
-                    common_update2();
+                    //common_update2(); see below
                 }
+            }*/
+            if (brushsize == BRUSH_MAP_ED)
+            {
+                active_map_x = ME_x1;
+                active_map_y = ME_y1;
+                label12.Text = "X = " + active_map_x.ToString(); // change the numbers at the top
+                label13.Text = "Y = " + active_map_y.ToString();
             }
 
             //update_tilemap();
@@ -1987,6 +2253,20 @@ namespace M1TE2
             label12.Text = "X = " + active_map_x.ToString(); // change the numbers at the top
             label13.Text = "Y = " + active_map_y.ToString();
 
+
+            if(brushsize == BRUSH_MAP_ED)
+            {
+                // TODO
+                ME_x1 = active_map_x;
+                ME_x2 = ME_x1 + 1;
+                ME_y1 = active_map_y;
+                ME_y2 = ME_y1 + 1;
+                ME_x_cur = ME_x1;
+                ME_y_cur = ME_y1;
+                update_tilemap();
+                return;
+            }
+
             if (e.Button == MouseButtons.Left)
             {
                 Checkpoint(); // only if left click
@@ -1997,7 +2277,15 @@ namespace M1TE2
 
                 last_tile_x = active_map_x; // to speed up the app
                 last_tile_y = active_map_y; // see mouse move event
-                picbox1_sub(); // place the tile and redraw the map
+                if(brushsize == BRUSH_MULTI)
+                {
+                    picbox1_sub_multi();
+                }
+                else
+                {
+                    picbox1_sub(); // place the tile and redraw the map
+                }
+                
                 //update_tilemap();
             }
             else if (e.Button == MouseButtons.Right) // get the tile, tileset, and properties
@@ -2090,6 +2378,14 @@ namespace M1TE2
                     pal_y = (pal >> 2);
                     pal_x = (pal & 3) << 2;
                 }
+                if(brushsize == BRUSH_MULTI)
+                { // select just 1
+                    BE_x1 = tile_x;
+                    BE_x2 = BE_x1 + 1;
+                    BE_y1 = tile_y;
+                    BE_y2 = BE_y1 + 1;
+                    Tiles.Make_Box_Same();
+                }
 
                 update_palette();
                 common_update2();
@@ -2130,13 +2426,56 @@ namespace M1TE2
                 label12.Text = "X = " + active_map_x.ToString();
                 label13.Text = "Y = " + active_map_y.ToString();
 
+                if(brushsize == BRUSH_MAP_ED)
+                {
+                    int change = 0;
+                    if(ME_x_cur != active_map_x)
+                    {
+                        ME_x_cur = active_map_x;
+                        ++change;
+                    }
+                    if (ME_y_cur != active_map_y)
+                    {
+                        ME_y_cur = active_map_y;
+                        ++change;
+                    }
+                    if (active_map_x < ME_x1)
+                    {
+                        ME_x2 = ME_x1 + 1;
+                    }
+                    else
+                    {
+                        ME_x2 = active_map_x + 1;
+                    }
+                    if (active_map_y < ME_y1)
+                    {
+                        ME_y2 = ME_y1 + 1;
+                    }
+                    else
+                    {
+                        ME_y2 = active_map_y + 1;
+                    }
+                    if(change != 0)
+                    {
+                        update_tilemap();
+                    }
+                    return;
+                }
+                
                 if ((last_tile_x != active_map_x) || (last_tile_y != active_map_y))
                 {
                     // only update if the tile under mouse has changed.
                     last_tile_x = active_map_x;
                     last_tile_y = active_map_y;
-                    picbox1_sub();
-                    //update_tilemap();
+                    if (brushsize == BRUSH_MULTI) 
+                    {
+                        picbox1_sub_multi();
+                    }
+                    else
+                    {
+                        picbox1_sub();
+                    }
+                    //update_tilemap(); // too slow
                 }
 
             }
@@ -2144,6 +2483,284 @@ namespace M1TE2
         // END MOUSE DOWN MOVE ON TILEMAP
 
 
+        public void ME_flip_h()
+        {
+            if (map_view > 2) return;
+
+            int half_x = (ME_x2 + 1 - ME_x1) / 2;
+            int offset = map_view * 1024;
+            
+            for(int y1 = ME_y1; y1 < ME_y2; y1++)
+            {
+                for(int x1 = 0; x1 < half_x; x1++)
+                {
+                    int left = (y1 * 32) + ME_x1 + x1 + offset;
+                    int right = (y1 * 32) + (ME_x2 - x1) + offset;
+                    right -= 1;
+                    int temp = Maps.tile[left];
+                    Maps.tile[left] = Maps.tile[right];
+                    Maps.tile[right] = temp;
+                    temp = Maps.palette[left];
+                    Maps.palette[left] = Maps.palette[right];
+                    Maps.palette[right] = temp;
+                    temp = Maps.h_flip[left] ^ 1;
+                    Maps.h_flip[left] = Maps.h_flip[right] ^ 1;
+                    Maps.h_flip[right] = temp;
+                    temp = Maps.v_flip[left];
+                    Maps.v_flip[left] = Maps.v_flip[right];
+                    Maps.v_flip[right] = temp;
+                    //skip priority
+                }
+            }
+        }
+
+
+        public void ME_flip_v()
+        {
+            if (map_view > 2) return;
+            
+            int half_y = (ME_y2 + 1 - ME_y1) / 2;
+            int offset = map_view * 1024;
+
+            for (int x1 = ME_x1; x1 < ME_x2; x1++)
+            {
+                for (int y1 = 0; y1 < half_y; y1++)
+                {
+                    int top = ((ME_y1 + y1) * 32) + x1 + offset;
+                    int bottom = ((ME_y2 - y1) * 32) + x1 + offset;
+                    bottom -= 32;
+                    int temp = Maps.tile[top];
+                    Maps.tile[top] = Maps.tile[bottom];
+                    Maps.tile[bottom] = temp;
+                    temp = Maps.palette[top];
+                    Maps.palette[top] = Maps.palette[bottom];
+                    Maps.palette[bottom] = temp;
+                    temp = Maps.h_flip[top];
+                    Maps.h_flip[top] = Maps.h_flip[bottom];
+                    Maps.h_flip[bottom] = temp;
+                    temp = Maps.v_flip[top] ^ 1;
+                    Maps.v_flip[top] = Maps.v_flip[bottom] ^ 1;
+                    Maps.v_flip[bottom] = temp;
+                    //skip priority
+                }
+            }
+        }
+
+        public void ME_delete()
+        {
+            if (map_view > 2) return;
+
+            int offset = map_view * 1024;
+
+            for (int y1 = ME_y1; y1 < ME_y2; y1++)
+            {
+                for (int x1 = ME_x1; x1 < ME_x2; x1++)
+                {
+                    int index = offset + (y1 * 32) + x1;
+                    Maps.tile[index] = 0;
+                    Maps.palette[index] = 0;
+                    Maps.h_flip[index] = 0;
+                    Maps.v_flip[index] = 0;
+                    // skip priority
+                }
+            }
+        }
+
+        public void ME_copy()
+        {
+            // just copy the whole map
+            int offset = map_view * 1024;
+            for(int i = 0; i < 1024; i++)
+            {
+                int tile_was = offset + i;
+                MapsC.tile[i] =  Maps.tile[tile_was];
+                MapsC.palette[i] = Maps.palette[tile_was];
+                MapsC.h_flip[i] = Maps.h_flip[tile_was];
+                MapsC.v_flip[i] = Maps.v_flip[tile_was];
+                // skip priority
+            }
+            // remember the size of the copy
+            ME_x1_c = ME_x1;
+            ME_x2_c = ME_x2;
+            ME_y1_c = ME_y1;
+            ME_y2_c = ME_y2;
+            ME_has_copied = true;
+        }
+
+
+        public void ME_paste()
+        {
+            if (ME_has_copied == false) return;
+
+            int offset = map_view * 1024;
+            int x_size = ME_x2_c - ME_x1_c;
+            int y_size = ME_y2_c - ME_y1_c;
+            for(int y1 = 0; y1 < y_size; y1++)
+            {
+                int final_y = ME_y1 + y1;
+                if (final_y >= map_height) break;
+                for (int x1 = 0; x1 < x_size; x1++)
+                {
+                    int final_x = ME_x1 + x1;
+                    if (final_x >= 32) break;
+                    int tile_was = ((ME_y1_c + y1) * 32) + ME_x1_c + x1;
+                    int tile_is = (final_y * 32) + final_x + offset;
+                    Maps.tile[tile_is] = MapsC.tile[tile_was];
+                    Maps.palette[tile_is] = MapsC.palette[tile_was];
+                    Maps.h_flip[tile_is] = MapsC.h_flip[tile_was];
+                    Maps.v_flip[tile_is] = MapsC.v_flip[tile_was];
+                    // skip priority
+
+                }
+            }
+        }
+
+
+        public void ME_fill()
+        { // fill currently selected area with 1 tile
+
+            int offset = map_view * 1024;
+            tile_num = (tile_y * 16) + tile_x;
+            int pal_sel = pal_y; // default 4bpp mode
+            if (map_view == 2) // 2bpp mode
+            {
+                pal_sel = (pal_y * 4) + (pal_x >> 2);
+            }
+
+            int flip_x_status = 0;
+            int flip_y_status = 0;
+            if (checkBox5.Checked == true) flip_x_status = 1;
+            if (checkBox6.Checked == true) flip_y_status = 1;
+
+            for(int y1 = ME_y1; y1 < ME_y2; y1++)
+            {
+                for (int x1 = ME_x1; x1 < ME_x2; x1++)
+                {
+                    int tile_is = (y1 * 32) + x1 + offset;
+                    Maps.palette[tile_is] = pal_sel;
+                    // what if "palette only" is checked ?
+                    if (checkBox7.Checked == true) continue; // skip the rest
+                    Maps.tile[tile_is] = tile_num;
+                    Maps.h_flip[tile_is] = flip_x_status;
+                    Maps.v_flip[tile_is] = flip_y_status;
+                    // skip priority
+                }
+            }
+        }
+
+
+        private void keypress_ME(PreviewKeyDownEventArgs e)
+        { // brush in Map Edit Only mode
+
+            int selection = pal_x + (pal_y * 16);
+
+            if (e.KeyCode == Keys.H) // h flip
+            {
+                Checkpoint();
+                ME_flip_h();
+            }
+            else if(e.KeyCode == Keys.Y) // v flip
+            {
+                Checkpoint();
+                ME_flip_v();
+            }
+            else if (e.KeyCode == Keys.Delete)
+            {
+                Checkpoint();
+                ME_delete();
+            }
+            else if (e.KeyCode == Keys.C) // copy
+            {
+                ME_copy();
+            }
+            else if (e.KeyCode == Keys.X) // cut
+            {
+                ME_copy();
+                Checkpoint();
+                ME_delete();
+            }
+            else if (e.KeyCode == Keys.V) // paste
+            {
+                Checkpoint();
+                ME_paste();
+            }
+            else if (e.KeyCode == Keys.F) // fill
+            {
+                Checkpoint();
+                ME_fill();
+            }
+            else if (e.KeyCode == Keys.A) // select all
+            {
+                ME_x1 = 0;
+                ME_y1 = 0;
+                ME_x2 = 32;
+                ME_y2 = map_height;
+            }
+
+            else if (e.KeyCode == Keys.Q)
+            { // palette copy selected color
+                pal_r_copy = Palettes.pal_r[selection];
+                pal_g_copy = Palettes.pal_g[selection];
+                pal_b_copy = Palettes.pal_b[selection];
+            }
+            else if (e.KeyCode == Keys.W)
+            { // palette paste selected to color
+                Palettes.pal_r[selection] = (byte)pal_r_copy;
+                Palettes.pal_g[selection] = (byte)pal_g_copy;
+                Palettes.pal_b[selection] = (byte)pal_b_copy;
+                update_palette();
+                rebuild_pal_boxes();
+            }
+            else if (e.KeyCode == Keys.E)
+            { // palette clear selected to color
+                Palettes.pal_r[selection] = 0;
+                Palettes.pal_g[selection] = 0;
+                Palettes.pal_b[selection] = 0;
+                update_palette();
+                rebuild_pal_boxes();
+            }
+            else if (e.KeyCode == Keys.D1) // number buttons
+            {
+                set1_change(); // change the tileset
+            }
+            else if (e.KeyCode == Keys.D2)
+            {
+                set2_change();
+            }
+            else if (e.KeyCode == Keys.D3)
+            {
+                set3_change();
+            }
+            else if (e.KeyCode == Keys.D4)
+            {
+                set4_change();
+            }
+            else if (e.KeyCode == Keys.D5)
+            {
+                set5_change();
+            }
+            else if (e.KeyCode == Keys.D6)
+            {
+                set6_change();
+            }
+            else if (e.KeyCode == Keys.D7)
+            {
+                set7_change();
+            }
+            else if (e.KeyCode == Keys.D8)
+            {
+                set8_change();
+            }
+
+            else if (e.KeyCode == Keys.Z)
+            {
+                Do_Undo();
+            }
+
+            common_update2();
+            // prevent change in focus
+            label5.Focus();
+        }
 
 
         //capure key presses on the tiles, focus is redirected to label 5
@@ -2151,6 +2768,12 @@ namespace M1TE2
         {
             int selection = pal_x + (pal_y * 16);
 
+            if(brushsize == BRUSH_MAP_ED)
+            {
+                keypress_ME(e);
+                return;
+            }
+            
             if (e.KeyCode == Keys.Left)
             {
                 Checkpoint();
@@ -2176,32 +2799,44 @@ namespace M1TE2
                 Tiles.shift_down();
             }
 
-            else if (e.KeyCode == Keys.NumPad2)
+            else if (e.KeyCode == Keys.NumPad2) // down
             {
-                if (tile_y < 15) tile_y++;
-                tile_num = (tile_y * 16) + tile_x;
+                if(brushsize != BRUSH_MULTI)
+                {
+                    if (tile_y < 15) tile_y++;
+                    tile_num = (tile_y * 16) + tile_x;
+                }
             }
-            else if (e.KeyCode == Keys.NumPad4)
+            else if (e.KeyCode == Keys.NumPad4) // left
             {
-                if (tile_x > 0) tile_x--;
-                tile_num = (tile_y * 16) + tile_x;
+                if (brushsize != BRUSH_MULTI)
+                {
+                    if (tile_x > 0) tile_x--;
+                    tile_num = (tile_y * 16) + tile_x;
+                }
             }
-            else if (e.KeyCode == Keys.NumPad6)
+            else if (e.KeyCode == Keys.NumPad6) // right
             {
-                if (tile_x < 15) tile_x++;
-                tile_num = (tile_y * 16) + tile_x;
+                if (brushsize != BRUSH_MULTI)
+                {
+                    if (tile_x < 15) tile_x++;
+                    tile_num = (tile_y * 16) + tile_x;
+                }
             }
-            else if (e.KeyCode == Keys.NumPad8)
+            else if (e.KeyCode == Keys.NumPad8) // up
             {
-                if (tile_y > 0) tile_y--;
-                tile_num = (tile_y * 16) + tile_x;
+                if (brushsize != BRUSH_MULTI)
+                {
+                    if (tile_y > 0) tile_y--;
+                    tile_num = (tile_y * 16) + tile_x;
+                }
             }
             else if (e.KeyCode == Keys.H)
             {
                 Checkpoint();
                 Tiles.tile_h_flip();
             }
-            else if (e.KeyCode == Keys.V)
+            else if (e.KeyCode == Keys.Y)
             {
                 Checkpoint();
                 Tiles.tile_v_flip();
@@ -2225,7 +2860,13 @@ namespace M1TE2
             {
                 Tiles.tile_copy();
             }
-            else if (e.KeyCode == Keys.P)
+            else if (e.KeyCode == Keys.X)
+            {
+                Tiles.tile_copy();
+                Checkpoint();
+                Tiles.tile_delete();
+            }
+            else if (e.KeyCode == Keys.V)
             {
                 Checkpoint();
                 Tiles.tile_paste();
@@ -2234,6 +2875,10 @@ namespace M1TE2
             {
                 Checkpoint();
                 Tiles.tile_fill();
+            }
+            else if (e.KeyCode == Keys.A)
+            {
+                Tiles.select_all();
             }
 
             else if (e.KeyCode == Keys.Q)
@@ -2319,47 +2964,7 @@ namespace M1TE2
             update_tilemap();
         }
 
-        private void x1ToolStripMenuItem_Click(object sender, EventArgs e)
-        { // brush size
-            brushsize = BRUSH1x1;
-            x1ToolStripMenuItem.Checked = true;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = false;
 
-            update_tile_image();
-        }
-
-        private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            brushsize = BRUSH3x3;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = true;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = false;
-
-            update_tile_image();
-        }
-
-        private void x5ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            brushsize = BRUSH5x5;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = true;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = false;
-
-            update_tile_image();
-        }
 
         // this should be in menuclicks.cs
         private void fillTopRowWithColorsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2430,20 +3035,6 @@ namespace M1TE2
             }
         }
 
-        private void fillScreenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //BRUSH_FILL
-            brushsize = BRUSH_FILL;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = true;
-
-            update_tile_image();
-        }
 
         private void trackBar1_MouseUp(object sender, MouseEventArgs e)
         {
@@ -2734,7 +3325,7 @@ namespace M1TE2
 
 
             // first the 4bpp tilesets (1-4)
-            int tile_so_far = 2; // ??
+            int tile_so_far = 2;
             for (int tile = 2; tile < 1024; tile += 2) // higher val
             {
                 if ((tile & 0x10) == 0x10) tile += 0x10;
@@ -2784,7 +3375,7 @@ namespace M1TE2
 
             // now test tilesets 5-8 (2bpp)
             // first the 4bpp tilesets (1-4)
-            tile_so_far = 2; // ??
+            tile_so_far = 2;
             for (int tile = 2; tile < 1024; tile += 2) // higher val
             {
                 if ((tile & 0x10) == 0x10) tile += 0x10;
@@ -3085,7 +3676,7 @@ namespace M1TE2
         { 
             // checks a map for a tile (to be replaced)
             // mapset should be 0, 1024, or 2048 (map1, map2, map3)
-            // for 16x16 mode (no changes ??)
+            // for 16x16 mode
             for (int i = 0; i < 1024; i++)
             {
                 if (Maps.tile[map_offset] == bad_tile)
@@ -3111,17 +3702,25 @@ namespace M1TE2
 
 
         private void checkBox5_Click(object sender, EventArgs e)
-        {
+        { // apply h flip
+            if (brushsize == BRUSH_MAP_ED)
+            {
+                checkBox5.Checked = false;
+            }
             label5.Focus();
         }
 
         private void checkBox6_Click(object sender, EventArgs e)
-        {
+        { // apply v flip
+            if (brushsize == BRUSH_MAP_ED)
+            {
+                checkBox6.Checked = false;
+            }
             label5.Focus();
         }
 
         private void checkBox7_Click(object sender, EventArgs e)
-        {
+        { // palette only
             label5.Focus();
         }
 
@@ -3138,9 +3737,155 @@ namespace M1TE2
 
         private void forceMapsToEvenValuesToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Checkpoint();
             Force16x16onMaps();
             common_update2();
             MessageBox.Show("done.");
+        }
+
+        private void pictureBox2_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (brushsize != BRUSH_MULTI) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                var mouseEventArgs = e as MouseEventArgs;
+                int pixel_x = mouseEventArgs.X;
+                int pixel_y = mouseEventArgs.Y;
+
+                if (pixel_x < 0) pixel_x = 0;
+                if (pixel_x > 255) pixel_x = 255;
+                if (pixel_y < 0) pixel_y = 0;
+                if (pixel_y > 255) pixel_y = 255;
+
+                BE_x_cur = BE_x1 = pixel_x / 16;
+                BE_x2 = BE_x1 + 1;
+                BE_y_cur = BE_y1 = pixel_y / 16;
+                BE_y2 = BE_y1 + 1;
+
+                tile_x = BE_x1;
+                tile_y = BE_y1;
+                tile_num = (tile_y * 16) + tile_x;
+                tile_show_num();
+
+                if (newChild != null)
+                {
+                    newChild.BringToFront();
+                    newChild.update_tile_box();
+                }
+                else
+                {
+                    // remember to put the form location as "manual"
+                    newChild = new Form2();
+                    newChild.Owner = this;
+                    int xx = Screen.PrimaryScreen.Bounds.Width;
+                    if (this.Location.X + 970 < xx) // set new form location
+                    {
+                        newChild.Location = new Point(this.Location.X + 804, this.Location.Y + 80);
+                    }
+                    else
+                    {
+                        newChild.Location = new Point(xx - 170, this.Location.Y);
+                    }
+
+                    newChild.Show();
+
+                }
+
+                update_tile_image();
+                //common_update2();
+            }
+        }
+
+        private void pictureBox2_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (brushsize != BRUSH_MULTI) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                var mouseEventArgs = e as MouseEventArgs;
+                int pixel_x = mouseEventArgs.X;
+                int pixel_y = mouseEventArgs.Y;
+
+                if (pixel_x < 0) pixel_x = 0;
+                if (pixel_x > 255) pixel_x = 255;
+                if (pixel_y < 0) pixel_y = 0;
+                if (pixel_y > 255) pixel_y = 255;
+
+                int temp_x = pixel_x / 16;
+                int temp_y = pixel_y / 16;
+                if ((temp_x != BE_x_cur) || (temp_y != BE_y_cur))
+                {
+                    BE_x_cur = temp_x;
+                    if (BE_x_cur <= BE_x1)
+                    {
+                        BE_x2 = BE_x1 + 1;
+                    }
+                    else
+                    {
+                        BE_x2 = BE_x_cur + 1;
+                    }
+
+                    BE_y_cur = temp_y;
+                    if (BE_y_cur <= BE_y1)
+                    {
+                        BE_y2 = BE_y1 + 1;
+                    }
+                    else
+                    {
+                        BE_y2 = BE_y_cur + 1;
+                    }
+
+                    update_tile_image();
+                }
+            }
+        }
+
+
+        private void pictureBox2_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (brushsize != BRUSH_MULTI) return;
+
+            if (e.Button == MouseButtons.Left)
+            {
+                var mouseEventArgs = e as MouseEventArgs;
+                int pixel_x = mouseEventArgs.X;
+                int pixel_y = mouseEventArgs.Y;
+
+                if (pixel_x < 0) pixel_x = 0;
+                if (pixel_x > 255) pixel_x = 255;
+                if (pixel_y < 0) pixel_y = 0;
+                if (pixel_y > 255) pixel_y = 255;
+
+                int temp_x = pixel_x / 16;
+                int temp_y = pixel_y / 16;
+
+                BE_x_cur = temp_x;
+                if (BE_x_cur <= BE_x1)
+                {
+                    BE_x2 = BE_x1 + 1;
+                }
+                else
+                {
+                    BE_x2 = BE_x_cur + 1;
+                }
+
+                BE_y_cur = temp_y;
+                if (BE_y_cur <= BE_y1)
+                {
+                    BE_y2 = BE_y1 + 1;
+                }
+                else
+                {
+                    BE_y2 = BE_y_cur + 1;
+                }
+
+                Tiles.Make_Box_Same();
+
+                update_tile_image();
+
+                label5.Focus();
+            }
         }
 
         private void zoomIntoQuadrantToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3160,6 +3905,8 @@ namespace M1TE2
             update_tilemap();
         }
 
+        
+
         private void x16TilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             x8TilesToolStripMenuItem.Checked = false;
@@ -3178,9 +3925,10 @@ namespace M1TE2
                 x3ToolStripMenuItem.Checked = false;
                 x5ToolStripMenuItem.Checked = false;
                 x2NextToolStripMenuItem.Checked = false;
-                cloneFromTilesetToolStripMenuItem.Checked = false;
-                cloneFromMapToolStripMenuItem.Checked = false;
+                //cloneFromTilesetToolStripMenuItem.Checked = false;
+                //cloneFromMapToolStripMenuItem.Checked = false;
                 fillScreenToolStripMenuItem.Checked = false;
+                multiSelectToolStripMenuItem.Checked = false;
             }
 
             common_update2();
@@ -3206,7 +3954,7 @@ namespace M1TE2
                 {
                     Bitmap import_bmp = new Bitmap(dlg.FileName);
 
-                    if ((import_bmp.Height < 8) || (import_bmp.Width < 8))
+                    if ((import_bmp.Height < 1) || (import_bmp.Width < 2)) // 2x1 minimum
                     {
                         MessageBox.Show("Error. File too small?");
                         import_bmp.Dispose();
@@ -3218,7 +3966,7 @@ namespace M1TE2
                         import_bmp.Dispose();
                         return;
                     }
-
+                    disable_map_click = 1;
 
                     int num_col_to_find, start_offset;
 
@@ -3531,6 +4279,120 @@ namespace M1TE2
             color_count++;
         }
 
+
+        public void image2CHRsmall(int width, int height)
+        {
+            // width, height should be 128x128 or less
+
+            Checkpoint(); // allow undo
+
+            // round width, height up to nearest 8
+            width = (width + 7) & 0xf8;
+            height = (height + 7) & 0xf8;
+
+            // copy to current tileset
+            int set_offset = tile_set * 16384;
+            int start_x = tile_x * 8;
+            int start_y = tile_y * 8;
+            int final_x, final_y, chr_index, pixel_num, med_x, med_y, tile_is;
+            for (int y1 = 0; y1 < height; y1+= 8)
+            {
+                med_y = start_y + y1;
+                if (med_y >= 128) break;
+                for (int x1 = 0; x1 < width; x1 += 8)
+                {
+                    med_x = start_x + x1;
+                    if (med_x >= 128) break;
+                    int stupid_x = med_x / 8;
+                    int stupid_y = med_y / 8;
+                    tile_is = (stupid_y * 16) + stupid_x;
+                    for (int y2 = 0; y2 < 8; y2++)
+                    {
+                        for (int x2 = 0; x2 < 8; x2++)
+                        {
+                            final_x = x1 + x2;
+                            final_y = y1 + y2;
+                            pixel_num = (final_y * 256) + final_x;
+                            chr_index = set_offset + (tile_is * 64) + (y2 * 8) + x2;
+                            Tiles.Tile_Arrays[chr_index] = needy_chr_array[pixel_num];
+                        }
+                    }
+                }
+            }
+
+            // put on map ?
+            if (f3_cb3 == false) return;
+
+            int map_width = width / 8;
+            int map_height = height / 8;
+
+            int pal_sel = 0;
+            int map_offset = map_view * 1024;
+            if (map_view == 2) // 2bpp mode
+            {
+                pal_sel = (pal_y * 4) + (pal_x >> 2);
+            }
+            else // 4 bpp
+            {
+                pal_sel = pal_y;
+            }
+            int map_offset2 = 0;
+
+            if(tilesize == TILE_8X8)
+            {
+                for (int y1 = 0; y1 < map_height; y1++)
+                {
+                    int final_map_y = y1 + active_map_y;
+                    if (final_map_y >= 32) break;
+                    int final_tile_y = y1 + tile_y;
+                    if (final_tile_y >= 16) break;
+                    for (int x1 = 0; x1 < map_width; x1++)
+                    {
+                        int final_map_x = x1 + active_map_x;
+                        if (final_map_x >= 32) break;
+                        int final_tile_x = x1 + tile_x;
+                        if (final_tile_x >= 16) break;
+                        tile_is = (final_tile_y * 16) + final_tile_x;
+                        map_offset2 = map_offset + (final_map_y * 32) + final_map_x;
+
+                        Maps.tile[map_offset2] = tile_is;
+                        Maps.palette[map_offset2] = pal_sel;
+                        Maps.h_flip[map_offset2] = 0;
+                        Maps.v_flip[map_offset2] = 0;
+                        //Maps.priority[map_offset2] = 0;
+                    }
+                }
+            }
+            else // tilesize = 16x16
+            {
+                for (int y1 = 0; y1 < map_height; y1+=2)
+                {
+                    int y1_half = y1 / 2;
+                    int final_map_y = y1_half + active_map_y;
+                    if (final_map_y >= 32) break;
+                    int final_tile_y = y1 + tile_y;
+                    if (final_tile_y >= 16) break;
+                    for (int x1 = 0; x1 < map_width; x1+=2)
+                    {
+                        int x1_half = x1 / 2;
+                        int final_map_x = x1_half + active_map_x;
+                        if (final_map_x >= 32) break;
+                        int final_tile_x = x1 + tile_x;
+                        if (final_tile_x >= 16) break;
+                        tile_is = (final_tile_y * 16) + final_tile_x;
+                        map_offset2 = map_offset + (final_map_y * 32) + final_map_x;
+
+                        Maps.tile[map_offset2] = tile_is;
+                        Maps.palette[map_offset2] = pal_sel;
+                        Maps.h_flip[map_offset2] = 0;
+                        Maps.v_flip[map_offset2] = 0;
+                        //Maps.priority[map_offset2] = 0;
+                    }
+                }
+            }
+            
+        }
+
         private void imageToCHRToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // import an image, generate CHR based on existing palette
@@ -3550,6 +4412,7 @@ namespace M1TE2
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
                     undo_ready = false;
+                    disable_map_click = 1;
                     //x8TilesToolStripMenuItem.Checked = true;
                     //x16TilesToolStripMenuItem.Checked = false;
                     //tilesize = TILE_8X8;
@@ -3611,7 +4474,7 @@ namespace M1TE2
                     }
                     
 
-                    int final_y, final_x, best_index, chr_index, tile_num, pixel_num;
+                    int final_y, final_x, best_index, chr_index, tile_is, pixel_num;
                     //int temp_set = 0;
                     int count = 0;
 
@@ -3671,12 +4534,30 @@ namespace M1TE2
                         }
                     }
 
+                    import_bmp.Dispose();
+
+
+                    // if <= 128x128, only blank needed tiles
+                    if((image_height <= 128) && (image_width <= 128))
+                    {
+                        image2CHRsmall(image_width, image_height);
+                        if (f3_cb2 == true)
+                        {
+                            RemoveDuplicateTiles();
+                        }
+                        common_update2(); // redraw everything
+                        //import_bmp.Dispose();
+                        return;
+                    }
+                    
+
+
                     // copy image to CHR
                     // do in 128x128 segments so it looks pretty
                     // working through each tile, one at a time
                     // this is a bit of a mess. ugh.
                     // the tile system goes tile by tile, y*8 + x
-                    tile_num = 0;
+                    tile_is = 0;
                     int tile_offset = 0;
                     if(map_view == 2)
                     {
@@ -3700,18 +4581,30 @@ namespace M1TE2
                                             
                                             pixel_num = (final_y * 256) + final_x;
                                             // 64 bytes per tile
-                                            chr_index = (tile_num * 64) + (y2 * 8) + x2;
+                                            chr_index = (tile_is * 64) + (y2 * 8) + x2;
                                             chr_index += tile_offset;
 
                                             Tiles.Tile_Arrays[chr_index] = needy_chr_array[pixel_num];
                                         }
                                     }
-                                    tile_num++;
+                                    tile_is++;
                                 }
                             }
 
                             //temp_set++;
                         }
+                    }
+
+                    if(f3_cb3 == false) // don't put on map
+                    {
+                        // remove duplicates
+                        if (f3_cb2 == true)
+                        {
+                            RemoveDuplicateTiles();
+                        }
+                        common_update2(); // redraw everything
+                        //import_bmp.Dispose();
+                        return;
                     }
                     
                     // fill the map with the palette # and the CHR values
@@ -3733,10 +4626,10 @@ namespace M1TE2
                         Maps.palette[i + map_offset] = pal_sel;
                         Maps.h_flip[i + map_offset] = 0;
                         Maps.v_flip[i + map_offset] = 0;
-                        Maps.priority[i + map_offset] = 0;
+                        //Maps.priority[i + map_offset] = 0;
                     }
                     // each 128x128 block separately
-                    tile_num = 0;
+                    tile_is = 0;
                     int map_offset2 = 0;
 
                     if(tilesize == TILE_8X8)
@@ -3746,7 +4639,7 @@ namespace M1TE2
                             for (int x = 0; x < 16; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num++;
+                                Maps.tile[map_offset2] = tile_is++;
                                 
                             }
                         }
@@ -3756,7 +4649,7 @@ namespace M1TE2
                             for (int x = 16; x < 32; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num++;
+                                Maps.tile[map_offset2] = tile_is++;
                             }
                         }
                         for (int y = 16; y < 32; y++)
@@ -3764,7 +4657,7 @@ namespace M1TE2
                             for (int x = 0; x < 16; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num++;
+                                Maps.tile[map_offset2] = tile_is++;
                             }
                         }
                         for (int y = 16; y < 32; y++)
@@ -3772,20 +4665,20 @@ namespace M1TE2
                             for (int x = 16; x < 32; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num++;
+                                Maps.tile[map_offset2] = tile_is++;
                             }
                         }
                     }
-                    else
+                    else // 16x16 tiles
                     {
                         for (int y = 0; y < 8; y++)
                         {
                             for (int x = 0; x < 8; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num;
-                                tile_num += 2;
-                                if((tile_num & 0x10) == 0x10) tile_num += 0x10;
+                                Maps.tile[map_offset2] = tile_is;
+                                tile_is += 2;
+                                if((tile_is & 0x10) == 0x10) tile_is += 0x10;
                             }
                         }
 
@@ -3794,9 +4687,9 @@ namespace M1TE2
                             for (int x = 8; x < 16; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num;
-                                tile_num += 2;
-                                if ((tile_num & 0x10) == 0x10) tile_num += 0x10;
+                                Maps.tile[map_offset2] = tile_is;
+                                tile_is += 2;
+                                if ((tile_is & 0x10) == 0x10) tile_is += 0x10;
                             }
                         }
                         for (int y = 8; y < 16; y++)
@@ -3804,9 +4697,9 @@ namespace M1TE2
                             for (int x = 0; x < 8; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num;
-                                tile_num += 2;
-                                if ((tile_num & 0x10) == 0x10) tile_num += 0x10;
+                                Maps.tile[map_offset2] = tile_is;
+                                tile_is += 2;
+                                if ((tile_is & 0x10) == 0x10) tile_is += 0x10;
                             }
                         }
                         for (int y = 8; y < 16; y++)
@@ -3814,9 +4707,9 @@ namespace M1TE2
                             for (int x = 8; x < 16; x++)
                             {
                                 map_offset2 = (y * 32) + x + map_offset;
-                                Maps.tile[map_offset2] = tile_num;
-                                tile_num += 2;
-                                if ((tile_num & 0x10) == 0x10) tile_num += 0x10;
+                                Maps.tile[map_offset2] = tile_is;
+                                tile_is += 2;
+                                if ((tile_is & 0x10) == 0x10) tile_is += 0x10;
                             }
                         }
                     }
@@ -3868,7 +4761,7 @@ namespace M1TE2
                     // redraw everything
                     common_update2();
 
-                    import_bmp.Dispose();
+                    //import_bmp.Dispose();
                 }
             }
         }
@@ -3876,7 +4769,7 @@ namespace M1TE2
         public int Best_Color(Color temp_color, int num_col, int start_offset)
         {
             int best_index = 0;
-            int best_count = 99999;
+            int best_count = 19999999; // !
 
             for(int i = 0; i < num_col; i++)
             {
@@ -3887,8 +4780,9 @@ namespace M1TE2
                 green = Math.Abs(green);
                 int blue = Palettes.pal_b[i2] - temp_color.B;
                 blue = Math.Abs(blue);
-                int sum = red + green + blue;
-                if(sum < best_count)
+                int sum = (red * red) + (green * green) + (blue * blue);
+				// left off a square root of sum that was unneeded
+                if (sum < best_count)
                 {
                     best_count = sum;
                     best_index = i;
@@ -3918,59 +4812,10 @@ namespace M1TE2
             }
         }
 
-        private void x2NextToolStripMenuItem_Click(object sender, EventArgs e)
-        { // drop current tile and it's neighbors in a 16x16 box
-            if(tilesize != TILE_8X8)
-            {
-                MessageBox.Show("This brush is disallowed in 16x16 Mode.");
-                return;
-            }
-
-            brushsize = BRUSHNEXT;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = true;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = false;
-
-            update_tile_image();
-        }
-
-        private void cloneFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            
-            brushsize = BRUSH_CLONE_T;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = true;
-            cloneFromMapToolStripMenuItem.Checked = false;
-            fillScreenToolStripMenuItem.Checked = false;
-
-            update_tile_image();
-        }
-
-        private void cloneFromMapToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            
-            brushsize = BRUSH_CLONE_M;
-            x1ToolStripMenuItem.Checked = false;
-            x3ToolStripMenuItem.Checked = false;
-            x5ToolStripMenuItem.Checked = false;
-            x2NextToolStripMenuItem.Checked = false;
-            cloneFromTilesetToolStripMenuItem.Checked = false;
-            cloneFromMapToolStripMenuItem.Checked = true;
-            fillScreenToolStripMenuItem.Checked = false;
-
-            update_tile_image();
-        }
 
         private void button2_Click(object sender, EventArgs e)
         { // shift map left
-            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip;//, temp_priority;
             int temp_offset2;
             if (map_view > 2) return;
             temp_offset = 32 * 32 * map_view;
@@ -3985,7 +4830,7 @@ namespace M1TE2
                 temp_palette = Maps.palette[temp_offset2];
                 temp_h_flip = Maps.h_flip[temp_offset2];
                 temp_v_flip = Maps.v_flip[temp_offset2];
-                temp_priority = Maps.priority[temp_offset2];
+                //temp_priority = Maps.priority[temp_offset2];
 
                 for (int xx = 0; xx < 31; xx++)
                 {
@@ -3994,14 +4839,14 @@ namespace M1TE2
                     Maps.palette[temp_offset2 + xx] = Maps.palette[temp_offset2 + xx + 1];
                     Maps.h_flip[temp_offset2 + xx] = Maps.h_flip[temp_offset2 + xx + 1];
                     Maps.v_flip[temp_offset2 + xx] = Maps.v_flip[temp_offset2 + xx + 1];
-                    Maps.priority[temp_offset2 + xx] = Maps.priority[temp_offset2 + xx + 1];
+                    //Maps.priority[temp_offset2 + xx] = Maps.priority[temp_offset2 + xx + 1];
                 }
                 // put left most column on right
                 Maps.tile[temp_offset2+31] = temp_tile;
                 Maps.palette[temp_offset2+31] = temp_palette;
                 Maps.h_flip[temp_offset2+31] = temp_h_flip;
                 Maps.v_flip[temp_offset2+31] = temp_v_flip;
-                Maps.priority[temp_offset2+31] = temp_priority;
+                //Maps.priority[temp_offset2+31] = temp_priority;
             }
             common_update2();
             label5.Focus();
@@ -4009,7 +4854,7 @@ namespace M1TE2
 
         private void button3_Click(object sender, EventArgs e)
         { // shift map right
-            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip;//, temp_priority;
             int temp_offset2;
             if (map_view > 2) return;
             temp_offset = 32 * 32 * map_view;
@@ -4024,7 +4869,7 @@ namespace M1TE2
                 temp_palette = Maps.palette[temp_offset2 + 31];
                 temp_h_flip = Maps.h_flip[temp_offset2 + 31];
                 temp_v_flip = Maps.v_flip[temp_offset2 + 31];
-                temp_priority = Maps.priority[temp_offset2 + 31];
+                //temp_priority = Maps.priority[temp_offset2 + 31];
 
                 for (int xx = 30; xx >= 0; xx--)
                 {
@@ -4033,14 +4878,14 @@ namespace M1TE2
                     Maps.palette[temp_offset2 + xx + 1] = Maps.palette[temp_offset2 + xx];
                     Maps.h_flip[temp_offset2 + xx + 1] = Maps.h_flip[temp_offset2 + xx];
                     Maps.v_flip[temp_offset2 + xx + 1] = Maps.v_flip[temp_offset2 + xx];
-                    Maps.priority[temp_offset2 + xx + 1] = Maps.priority[temp_offset2 + xx];
+                    //Maps.priority[temp_offset2 + xx + 1] = Maps.priority[temp_offset2 + xx];
                 }
                 // put right most column on left
                 Maps.tile[temp_offset2] = temp_tile;
                 Maps.palette[temp_offset2] = temp_palette;
                 Maps.h_flip[temp_offset2] = temp_h_flip;
                 Maps.v_flip[temp_offset2] = temp_v_flip;
-                Maps.priority[temp_offset2] = temp_priority;
+                //Maps.priority[temp_offset2] = temp_priority;
             }
             common_update2();
             label5.Focus();
@@ -4048,7 +4893,7 @@ namespace M1TE2
 
         private void button4_Click(object sender, EventArgs e)
         { // shift map up
-            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip; //, temp_priority;
             int temp_offset2, temp_offset3;
             if (map_view > 2) return;
             temp_offset = 32 * 32 * map_view;
@@ -4063,7 +4908,7 @@ namespace M1TE2
                 temp_palette = Maps.palette[temp_offset2];
                 temp_h_flip = Maps.h_flip[temp_offset2];
                 temp_v_flip = Maps.v_flip[temp_offset2];
-                temp_priority = Maps.priority[temp_offset2];
+                //temp_priority = Maps.priority[temp_offset2];
 
                 for (int yy = 0; yy < 31; yy++)
                 {
@@ -4073,14 +4918,14 @@ namespace M1TE2
                     Maps.palette[temp_offset3] = Maps.palette[temp_offset3 + 32];
                     Maps.h_flip[temp_offset3] = Maps.h_flip[temp_offset3 + 32];
                     Maps.v_flip[temp_offset3] = Maps.v_flip[temp_offset3 + 32];
-                    Maps.priority[temp_offset3] = Maps.priority[temp_offset3 + 32];
+                    //Maps.priority[temp_offset3] = Maps.priority[temp_offset3 + 32];
                 }
                 // put top most row on bottom
                 Maps.tile[temp_offset2 + (31 * 32)] = temp_tile;
                 Maps.palette[temp_offset2 + (31 * 32)] = temp_palette;
                 Maps.h_flip[temp_offset2 + (31 * 32)] = temp_h_flip;
                 Maps.v_flip[temp_offset2 + (31 * 32)] = temp_v_flip;
-                Maps.priority[temp_offset2 + (31 * 32)] = temp_priority;
+                //Maps.priority[temp_offset2 + (31 * 32)] = temp_priority;
             }
             common_update2();
             label5.Focus();
@@ -4088,7 +4933,7 @@ namespace M1TE2
 
         private void button5_Click(object sender, EventArgs e)
         { // shift map down
-            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip, temp_priority;
+            int temp_offset, temp_tile, temp_palette, temp_h_flip, temp_v_flip; //, temp_priority;
             int temp_offset2, temp_offset3;
             if (map_view > 2) return;
             temp_offset = 32 * 32 * map_view;
@@ -4103,7 +4948,7 @@ namespace M1TE2
                 temp_palette = Maps.palette[temp_offset2 + (31 * 32)];
                 temp_h_flip = Maps.h_flip[temp_offset2 + (31 * 32)];
                 temp_v_flip = Maps.v_flip[temp_offset2 + (31 * 32)];
-                temp_priority = Maps.priority[temp_offset2 + (31 * 32)];
+                //temp_priority = Maps.priority[temp_offset2 + (31 * 32)];
 
                 for (int yy = 30; yy >= 0; yy--)
                 {
@@ -4113,14 +4958,14 @@ namespace M1TE2
                     Maps.palette[temp_offset3 + 32] = Maps.palette[temp_offset3];
                     Maps.h_flip[temp_offset3 + 32] = Maps.h_flip[temp_offset3];
                     Maps.v_flip[temp_offset3 + 32] = Maps.v_flip[temp_offset3];
-                    Maps.priority[temp_offset3 + 32] = Maps.priority[temp_offset3];
+                    //Maps.priority[temp_offset3 + 32] = Maps.priority[temp_offset3];
                 }
                 // put bottom most row on top
                 Maps.tile[temp_offset2] = temp_tile;
                 Maps.palette[temp_offset2] = temp_palette;
                 Maps.h_flip[temp_offset2] = temp_h_flip;
                 Maps.v_flip[temp_offset2] = temp_v_flip;
-                Maps.priority[temp_offset2] = temp_priority;
+                //Maps.priority[temp_offset2] = temp_priority;
             }
             common_update2();
             label5.Focus();
@@ -4163,8 +5008,24 @@ namespace M1TE2
                 str = value.ToString();
                 textBox5.Text = str;
 
-                active_map_index = active_map_x + (active_map_y * 32) + (32 * 32 * map_view);
-                Maps.palette[active_map_index] = value;
+                int offset = map_view * 1024;
+                if (brushsize != BRUSH_MAP_ED)
+                {
+                    active_map_index = active_map_x + (active_map_y * 32) + offset;
+                    Maps.palette[active_map_index] = value;
+                }
+                else
+                { // map edit mode, recolor the entire selection
+                    //int offset = map_view * 1024;
+                    for (int y1 = ME_y1; y1 < ME_y2; y1++)
+                    {
+                        for (int x1 = ME_x1; x1 < ME_x2; x1++)
+                        {
+                            active_map_index = offset + (y1 * 32) + x1;
+                            Maps.palette[active_map_index] = value;
+                        }
+                    }
+                }
 
                 //also change the palette selection
                 if(map_view == 2)
@@ -4240,6 +5101,12 @@ namespace M1TE2
         private void checkBox1_Click(object sender, EventArgs e)
         { // h flip
             if (map_view > 2) return;
+            if (brushsize == BRUSH_MAP_ED) 
+            {
+                checkBox1.Checked = false;
+                label5.Focus();
+                return;
+            } 
 
             Checkpoint();
 
@@ -4262,6 +5129,12 @@ namespace M1TE2
         private void checkBox2_Click(object sender, EventArgs e)
         { // v flip
             if (map_view > 2) return;
+            if (brushsize == BRUSH_MAP_ED)
+            {
+                checkBox2.Checked = false;
+                label5.Focus();
+                return;
+            }
 
             Checkpoint();
 

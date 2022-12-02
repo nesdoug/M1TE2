@@ -1837,7 +1837,7 @@ namespace M1TE2
         private void loadPaletteFromRGBToolStripMenuItem_Click(object sender, EventArgs e)
         { // PALETTE / LOAD FROM RGB
             byte[] pal_array = new byte[384]; // 128 entries * 3 colors
-            int temp, max_size;
+            int max_size;
 
             OpenFileDialog openFileDialog1 = new OpenFileDialog();
             openFileDialog1.Title = "Select a Palette file RGB";
@@ -2003,7 +2003,6 @@ namespace M1TE2
         private void savePalAsRGBToolStripMenuItem_Click(object sender, EventArgs e)
         { // PALETTE / SAVE PAL AS RGB (for YY-CHR)
             byte[] pal_array = new byte[384]; // 128 entries * 3 = r,g,b
-            int temp;
             int offset = 0;
             for (int i = 0; i < 128; i++)
             {
@@ -2538,9 +2537,217 @@ namespace M1TE2
 
 
 
+
+        // BRUSHES / brushsize ***************************
+
+
+        private void mapEditToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //brush = BRUSH_MAP_ED
+            //if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH_MAP_ED;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = true;
+
+            ME_x1 = active_map_x;
+            ME_x2 = ME_x1 + 1;
+            ME_y1 = active_map_y;
+            ME_y2 = ME_y1 + 1;
+            ME_has_copied = false;
+            checkBox1.Checked = false;
+            checkBox2.Checked = false; // just skip these
+            checkBox5.Checked = false;
+            checkBox6.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        private void multiSelectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (brushsize != BRUSH_MULTI)
+            {
+                Tiles.Has_Copied = false;
+                BE_x1 = tile_x; // fix bug
+                BE_x2 = BE_x1 + 1;
+                BE_y1 = tile_y;
+                BE_y2 = BE_y1 + 1;
+            }
+
+            //BRUSH_MULTI
+            brushsize = BRUSH_MULTI;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = true;
+            mapEditToolStripMenuItem.Checked = false;
+
+            Tiles.Make_Box_Same();
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        private void x1ToolStripMenuItem_Click(object sender, EventArgs e)
+        { // brushsize 1x1 same
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH1x1;
+            x1ToolStripMenuItem.Checked = true;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        private void x3ToolStripMenuItem_Click(object sender, EventArgs e)
+        { // brushsize 3x3 same
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH3x3;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = true;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        private void x5ToolStripMenuItem_Click(object sender, EventArgs e)
+        { // brushsize 5x5 same
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH5x5;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = true;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        private void x2NextToolStripMenuItem_Click(object sender, EventArgs e)
+        { // brushsize = 2x2 next
+            // drop current tile and it's neighbors in a 16x16 box
+            if (tilesize != TILE_8X8)
+            {
+                MessageBox.Show("This brush is not allowed in 16x16 Mode.");
+                return;
+            }
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSHNEXT;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = true;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+        /*private void cloneFromTilesetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // brushsize = clone from tileset
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH_CLONE_T;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = true;
+            cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }*/
+
+        /*private void cloneFromMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // brushseize = clone from map
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            brushsize = BRUSH_CLONE_M;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            cloneFromTilesetToolStripMenuItem.Checked = false;
+            cloneFromMapToolStripMenuItem.Checked = true;
+            fillScreenToolStripMenuItem.Checked = false;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }*/
+
+        private void fillScreenToolStripMenuItem_Click(object sender, EventArgs e)
+        { // brushsize = fill screen
+            if (brushsize == BRUSH_MULTI) Tiles.Has_Copied = false;
+
+            //BRUSH_FILL
+            brushsize = BRUSH_FILL;
+            x1ToolStripMenuItem.Checked = false;
+            x3ToolStripMenuItem.Checked = false;
+            x5ToolStripMenuItem.Checked = false;
+            x2NextToolStripMenuItem.Checked = false;
+            //cloneFromTilesetToolStripMenuItem.Checked = false;
+            //cloneFromMapToolStripMenuItem.Checked = false;
+            fillScreenToolStripMenuItem.Checked = true;
+            multiSelectToolStripMenuItem.Checked = false;
+            mapEditToolStripMenuItem.Checked = false;
+
+            //update_tile_image();
+            common_update2();
+        }
+
+
+
+
         // INFO ******************************
 
-        
+
         private void aboutM1TEToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MessageBox.Show("M1TE = Mode 1 Tile Editor for SNES, by Doug Fraker, 2020.\n\nnesdoug.com");
