@@ -558,6 +558,38 @@ namespace M1TE2
                 Form1.ME_x2 = 32;
                 Form1.ME_y2 = Form1.map_height;
             }
+            else if (e.KeyCode == Keys.D1) // number buttons
+            {
+                f.set1_change(); // change the tileset
+            }
+            else if (e.KeyCode == Keys.D2)
+            {
+                f.set2_change();
+            }
+            else if (e.KeyCode == Keys.D3)
+            {
+                f.set3_change();
+            }
+            else if (e.KeyCode == Keys.D4)
+            {
+                f.set4_change();
+            }
+            else if (e.KeyCode == Keys.D5)
+            {
+                f.set5_change();
+            }
+            else if (e.KeyCode == Keys.D6)
+            {
+                f.set6_change();
+            }
+            else if (e.KeyCode == Keys.D7)
+            {
+                f.set7_change();
+            }
+            else if (e.KeyCode == Keys.D8)
+            {
+                f.set8_change();
+            }
             else if (e.KeyCode == Keys.Z)
             {
                 f.Do_Undo();

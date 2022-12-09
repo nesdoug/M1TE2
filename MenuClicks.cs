@@ -203,6 +203,64 @@ namespace M1TE2
 
 
 
+        public void conformPriorities()
+        {
+            if (map_view > 2) return;
+            int offset = 0;
+            int fill_val = 0;
+
+            if (map_view == 0)
+            {
+                offset = 0;
+                if (Maps.priority[offset] == 0)
+                {
+                    checkBox3.Checked = false;
+                    fill_val = 0;
+                }
+                else
+                {
+                    checkBox3.Checked = true;
+                    fill_val = 1;
+                }
+            }
+            else if(map_view == 1)
+            {
+                offset = 32 * 32;
+                if (Maps.priority[offset] == 0)
+                {
+                    checkBox3.Checked = false;
+                    fill_val = 0;
+                }
+                else
+                {
+                    checkBox3.Checked = true;
+                    fill_val = 1;
+                }
+            }
+            else if (map_view == 2)
+            {
+                offset = 2 * 32 * 32;
+                if (Maps.priority[offset] == 0)
+                {
+                    checkBox3.Checked = false;
+                    fill_val = 0;
+                }
+                else
+                {
+                    checkBox3.Checked = true;
+                    fill_val = 1;
+                }
+            }
+
+            // make entire map conform
+            for (int i = 0; i < 32 * 32; i++)
+            {
+                Maps.priority[offset++] = fill_val;
+            }
+        }
+
+
+
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         { // FILE / SAVE SESSION
 
@@ -420,10 +478,8 @@ namespace M1TE2
                             offset++;
                         }
 
-                        // assume that all the priority bits are the same.
-                        offset = map_view * 32 * 32;
-                        if (Maps.priority[offset] == 0) checkBox3.Checked = false;
-                        else checkBox3.Checked = true;
+                        // make all the priority bits are the same.
+                        conformPriorities();
                     }
                 }
 
@@ -497,10 +553,8 @@ namespace M1TE2
                             if (offset >= too_far) break;
                         }
 
-                        // assume that all the priority bits are the same.
-                        offset = (map_view * 32 * 32) + (32 * active_map_y);
-                        if (Maps.priority[offset] == 0) checkBox3.Checked = false;
-                        else checkBox3.Checked = true;
+                        // make all the priority bits are the same.
+                        conformPriorities();
                     }
                 }
 
@@ -578,10 +632,8 @@ namespace M1TE2
                             if (offset >= too_far) break;
                         }
 
-                        // assume that all the priority bits are the same.
-                        offset = (map_view * 32 * 32) + (32 * active_map_y);
-                        if (Maps.priority[offset] == 0) checkBox3.Checked = false;
-                        else checkBox3.Checked = true;
+                        // make all the priority bits are the same.
+                        conformPriorities();
                     }
                 }
 

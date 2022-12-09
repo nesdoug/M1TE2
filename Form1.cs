@@ -67,7 +67,7 @@ namespace M1TE2
         public static int pal_r_copy, pal_g_copy, pal_b_copy;
         public static byte[] rle_array = new byte[65536];
         public static int rle_index, rle_index2, rle_count;
-        public static int map_clone_x, map_clone_y, clone_start_x, clone_start_y;
+        //public static int map_clone_x, map_clone_y, clone_start_x, clone_start_y;
         public static int disable_map_click;
 
         public static int[] R_Array = new int[65536];
@@ -2220,6 +2220,7 @@ namespace M1TE2
 
             //update_tilemap();
             common_update2();
+            label5.Focus();
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -2254,25 +2255,25 @@ namespace M1TE2
             label13.Text = "Y = " + active_map_y.ToString();
 
 
-            if(brushsize == BRUSH_MAP_ED)
-            {
-                // TODO
-                ME_x1 = active_map_x;
-                ME_x2 = ME_x1 + 1;
-                ME_y1 = active_map_y;
-                ME_y2 = ME_y1 + 1;
-                ME_x_cur = ME_x1;
-                ME_y_cur = ME_y1;
-                update_tilemap();
-                return;
-            }
 
             if (e.Button == MouseButtons.Left)
             {
+                if (brushsize == BRUSH_MAP_ED)
+                {
+                    ME_x1 = active_map_x;
+                    ME_x2 = ME_x1 + 1;
+                    ME_y1 = active_map_y;
+                    ME_y2 = ME_y1 + 1;
+                    ME_x_cur = ME_x1;
+                    ME_y_cur = ME_y1;
+                    update_tilemap();
+                    return;
+                }
+
                 Checkpoint(); // only if left click
 
-                clone_start_x = active_map_x;
-                clone_start_y = active_map_y;
+                //clone_start_x = active_map_x;
+                //clone_start_y = active_map_y;
 
 
                 last_tile_x = active_map_x; // to speed up the app
@@ -2290,8 +2291,8 @@ namespace M1TE2
             }
             else if (e.Button == MouseButtons.Right) // get the tile, tileset, and properties
             {
-                map_clone_x = active_map_x;
-                map_clone_y = active_map_y;
+                //map_clone_x = active_map_x;
+                //map_clone_y = active_map_y;
 
                 int tile = (map_view * 32 * 32) + (32 * active_map_y) + active_map_x;
                 int pal = Maps.palette[tile];
@@ -2621,6 +2622,7 @@ namespace M1TE2
 
             int offset = map_view * 1024;
             tile_num = (tile_y * 16) + tile_x;
+            int tile_num2 = (tile_set * 256) + tile_num; // :p
             int pal_sel = pal_y; // default 4bpp mode
             if (map_view == 2) // 2bpp mode
             {
@@ -2640,7 +2642,7 @@ namespace M1TE2
                     Maps.palette[tile_is] = pal_sel;
                     // what if "palette only" is checked ?
                     if (checkBox7.Checked == true) continue; // skip the rest
-                    Maps.tile[tile_is] = tile_num;
+                    Maps.tile[tile_is] = tile_num2;
                     Maps.h_flip[tile_is] = flip_x_status;
                     Maps.v_flip[tile_is] = flip_y_status;
                     // skip priority
@@ -2766,6 +2768,24 @@ namespace M1TE2
         //capure key presses on the tiles, focus is redirected to label 5
         private void label5_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
+
+            if (e.KeyCode == Keys.Left) // fix bug, don't change the focus to something else.
+            {
+                e.IsInputKey = true;
+            }
+            else if (e.KeyCode == Keys.Up)
+            {
+                e.IsInputKey = true;
+            }
+            else if (e.KeyCode == Keys.Right)
+            {
+                e.IsInputKey = true;
+            }
+            else if (e.KeyCode == Keys.Down)
+            {
+                e.IsInputKey = true;
+            }
+
             int selection = pal_x + (pal_y * 16);
 
             if(brushsize == BRUSH_MAP_ED)
@@ -3905,7 +3925,32 @@ namespace M1TE2
             update_tilemap();
         }
 
-        
+        private void checkBox3_Click(object sender, EventArgs e)
+        {
+            // priority (entire map)
+            if (map_view > 2) return;
+
+            Checkpoint();
+
+            int offset = map_view * 32 * 32;
+            if (checkBox3.Checked == false)
+            {
+                for (int i = 0; i < 32 * 32; i++)
+                {
+                    Maps.priority[offset++] = 0;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 32 * 32; i++)
+                {
+                    Maps.priority[offset++] = 1;
+                }
+            }
+
+            //this tool doesn't show priority differences
+            label5.Focus();
+        }
 
         private void x16TilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -5053,28 +5098,7 @@ namespace M1TE2
 
         private void checkBox3_CheckedChanged(object sender, EventArgs e)
         { // priority (entire map)
-            if (map_view > 2) return;
-
-            Checkpoint();
-
-            int offset = map_view * 32 * 32;
-            if (checkBox3.Checked == false)
-            {
-                for(int i = 0; i < 32*32; i++)
-                {
-                    Maps.priority[offset++] = 0;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 32 * 32; i++)
-                {
-                    Maps.priority[offset++] = 1;
-                }
-            }
-
-            //this tool doesn't show priority differences
-            label5.Focus();
+            // moved to click above
         }
 
 

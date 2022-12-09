@@ -366,6 +366,7 @@
             this.checkBox3.Text = "Priority (fullmap)";
             this.checkBox3.UseVisualStyleBackColor = true;
             this.checkBox3.CheckedChanged += new System.EventHandler(this.checkBox3_CheckedChanged);
+            this.checkBox3.Click += new System.EventHandler(this.checkBox3_Click);
             // 
             // label14
             // 
@@ -732,35 +733,35 @@
             this.bG1TopToolStripMenuItem.Checked = true;
             this.bG1TopToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.bG1TopToolStripMenuItem.Name = "bG1TopToolStripMenuItem";
-            this.bG1TopToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.bG1TopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.bG1TopToolStripMenuItem.Text = "BG1 4bpp";
             this.bG1TopToolStripMenuItem.Click += new System.EventHandler(this.bG1TopToolStripMenuItem_Click);
             // 
             // bG2ToolStripMenuItem
             // 
             this.bG2ToolStripMenuItem.Name = "bG2ToolStripMenuItem";
-            this.bG2ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.bG2ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.bG2ToolStripMenuItem.Text = "BG2 4bpp";
             this.bG2ToolStripMenuItem.Click += new System.EventHandler(this.bG2ToolStripMenuItem_Click);
             // 
             // bG3ToolStripMenuItem
             // 
             this.bG3ToolStripMenuItem.Name = "bG3ToolStripMenuItem";
-            this.bG3ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.bG3ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.bG3ToolStripMenuItem.Text = "BG3 2bpp";
             this.bG3ToolStripMenuItem.Click += new System.EventHandler(this.bG3ToolStripMenuItem_Click);
             // 
             // previewAllToolStripMenuItem
             // 
             this.previewAllToolStripMenuItem.Name = "previewAllToolStripMenuItem";
-            this.previewAllToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.previewAllToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.previewAllToolStripMenuItem.Text = "Preview 1/2/3";
             this.previewAllToolStripMenuItem.Click += new System.EventHandler(this.previewAllToolStripMenuItem_Click);
             // 
             // preview312ToolStripMenuItem
             // 
             this.preview312ToolStripMenuItem.Name = "preview312ToolStripMenuItem";
-            this.preview312ToolStripMenuItem.Size = new System.Drawing.Size(146, 22);
+            this.preview312ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.preview312ToolStripMenuItem.Text = "Preview 3/1/2";
             this.preview312ToolStripMenuItem.Click += new System.EventHandler(this.preview312ToolStripMenuItem_Click);
             // 
@@ -1181,7 +1182,7 @@
             this.MinimumSize = new System.Drawing.Size(820, 680);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
-            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.5 b3";
+            this.Text = "M1TE - SNES Mode 1 Tile Editor ver 3.6";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();

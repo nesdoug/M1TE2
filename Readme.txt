@@ -1,5 +1,5 @@
-M1TE ver 3.5 (SNES Mode 1 Tile Editor) 
-Dec 2, 2022
+M1TE ver 3.6 (SNES Mode 1 Tile Editor) 
+Dec 9, 2022
 .NET 4.5.2 (works with MONO on non-Windows systems)
 For SNES game development. Mode 1.
 Freeware by Doug Fraker
@@ -89,6 +89,7 @@ version changes
       (as small as 2x1) to allow 16x1 images as a palette
 3.5 - bumped up version # to show that
       there were lots of changes 
+3.6 - slight changes / bug fixes
 
 
 Note, the RLE is a special compression format that I wrote, 
@@ -189,8 +190,8 @@ Right click - get the color under the pointer
 Numberpad 2,4,6,8 to move to adjacent tile.
 Arrow keys to shift the image.
 F - fills a tile with selected color
-H - flip horizontal (notice the symmetric shape of the letter W)
-Y - flip vertical (notice the symmetric shape of the letter E)
+H - flip horizontal
+Y - flip vertical
 R - rotate clockwise
 L - rotate counter clockwise
 Delete - fills with color 0 (transparent)
@@ -346,6 +347,7 @@ Native .M1 file format details...
 ///////////////////////////////////////////////
 TODO-
 -color replace tool
+-more control of priority
 ///////////////////////////////////////////////
 
 
